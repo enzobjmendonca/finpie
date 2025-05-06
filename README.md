@@ -1,13 +1,14 @@
 # QuantLib
 
-A comprehensive Python library for quantitative finance research and analysis.
+A simple Python library for quantitative finance research and analysis.
 
 ## Overview
 
-QuantLib is designed to provide robust tools and utilities for quantitative finance research, focusing on two main components:
+QuantLib is designed to provide easy tools and utilities for quantitative finance research, focusing on three main components:
 
-1. **Data Module**: Handles financial data acquisition, processing, and management
-2. **Analytics Module**: Provides advanced financial analysis and modeling capabilities
+1. **Data Module**: Handles data itself in the form of timeseries.
+2. **Analytics Module**: Provides advanced financial analysis and modeling capabilities.
+3. **Data Source Module**: Provides the data requests and ensures integrity and adherence with lib standards.
 
 ## Features
 
@@ -110,7 +111,7 @@ quantlib/
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.setup
+Contributions are welcome! Please feel free to submit a Pull Request :).
 
 ## License
 
