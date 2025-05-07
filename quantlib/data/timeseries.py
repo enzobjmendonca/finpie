@@ -89,7 +89,7 @@ class TimeSeries:
         
         return TimeSeries(resampled_data, new_metadata)
     
-    def returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.DataFrame:
         """
         Calculate returns for the time series.
         
@@ -98,7 +98,7 @@ class TimeSeries:
             method: Return calculation method ('log' or 'simple')
             
         Returns:
-            pd.Series with returns data
+            pd.DataFrame with returns data
         """
         if method not in ['log', 'simple']:
             raise ValueError("Method must be either 'log' or 'simple'")
@@ -256,40 +256,45 @@ class TimeSeries:
         # Get the maximum drawdown
         return drawdown.min()
 
-    def value_at_risk(self, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def value_at_risk(self, percentage: bool = True, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Value at Risk (VaR) of the time series.
         """
-        returns = self.returns(intraday_only, method)
-        return returns.quantile(confidence_level)    
-    
-    def expected_shortfall(self, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
-        """
-        Calculate the Expected Shortfall (ES) of the time series.
-        """
-        returns = self.returns(intraday_only, method)
-        return returns.quantile(confidence_level)    
+        if percentage:
+            returns = self.returns(intraday_only, method)
+        else:
+            returns = self.data.diff()
+        return returns.quantile(confidence_level)
     
     def skewness(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the skewness of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.skew()    
+        skew_map = {}
+        for col in returns.columns:
+            skew_map[col] = returns[col].skew()
+        return skew_map
     
     def kurtosis(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the kurtosis of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.kurt()    
+        kurt_map = {}
+        for col in returns.columns:
+            kurt_map[col] = returns[col].kurt()
+        return kurt_map
     
     def autocorrelation(self, lag: int = 1, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the autocorrelation of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.autocorr(lag)
+        acorr_map = {}
+        for col in returns.columns:
+            acorr_map[col] = returns[col].autocorr(lag)
+        return acorr_map
         
     
     
