@@ -3,6 +3,10 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List, Union
 import pandas as pd
 import numpy as np
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 @dataclass
 class TimeSeriesMetadata:
@@ -14,6 +18,7 @@ class TimeSeriesMetadata:
     frequency: str
     currency: str
     additional_info: Dict[str, Any]
+    is_returns: bool = False
 
 class TimeSeries:
     """
@@ -32,16 +37,29 @@ class TimeSeries:
             data: DataFrame with datetime index and price columns
             metadata: TimeSeriesMetadata object containing series information
         """
+        logger.info(f"Initializing TimeSeries for symbol: {metadata.symbol if metadata else 'Unknown'}")
         self.data = data
         self.metadata = metadata
         
         # Validate data
         if not isinstance(data.index, pd.DatetimeIndex):
+            logger.error("Data must have a DatetimeIndex")
             raise ValueError("Data must have a DatetimeIndex")
+        
+        if isinstance(data, pd.DataFrame) and len(data.columns) > 1:
+            logger.error("Data must have only one column, please use MultiTimeSeries for multiple columns")
+            raise ValueError("Data must have only one column, please use MultiTimeSeries for multiple columns")
+
+        if isinstance(data, pd.Series):
+            logger.debug("Converting Series to DataFrame")
+            self.data = data.to_frame()
             
         # Sort index if not already sorted
         if not data.index.is_monotonic_increasing:
+            logger.debug("Sorting index as it's not monotonic increasing")
             self.data = data.sort_index()
+            
+        logger.info(f"TimeSeries initialized with {len(self.data)} data points from {self.start_date} to {self.end_date}")
     
     @property
     def start_date(self) -> datetime:
@@ -68,6 +86,7 @@ class TimeSeries:
         Returns:
             New TimeSeries object with resampled data
         """
+        logger.info(f"Resampling data to frequency: {freq}")
         resampled_data = self.data.resample(freq).agg({
             'open': 'first',
             'high': 'max',
@@ -87,9 +106,10 @@ class TimeSeries:
             additional_info=self.metadata.additional_info
         )
         
+        logger.info(f"Resampling complete. New data points: {len(resampled_data)}")
         return TimeSeries(resampled_data, new_metadata)
     
-    def returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.DataFrame:
+    def returns(self, intraday_only: bool = False, method: str = 'simple') -> 'TimeSeries':
         """
         Calculate returns for the time series.
         
@@ -98,21 +118,39 @@ class TimeSeries:
             method: Return calculation method ('log' or 'simple')
             
         Returns:
-            pd.DataFrame with returns data
+            TimeSeries object with returns data
         """
+        logger.info(f"Calculating {method} returns with intraday_only={intraday_only}")
+        
         if method not in ['log', 'simple']:
+            logger.error(f"Invalid method: {method}. Must be either 'log' or 'simple'")
             raise ValueError("Method must be either 'log' or 'simple'")
             
         if method == 'log':
             returns_df = np.log(self.data / self.data.shift(1))
+            logger.debug("Calculated log returns")
         else:
             returns_df = self.data.pct_change()
+            logger.debug("Calculated simple returns")
         
         if intraday_only:
+            logger.debug("Dropping first record of each day")
             # Group by date and drop first record of each day
             returns_df = returns_df.groupby(returns_df.index.date).apply(lambda x: x.iloc[1:]).reset_index(level=0, drop=True)
+            
+        returns_metadata = TimeSeriesMetadata(
+            symbol=self.metadata.symbol + '_returns' if self.metadata != None else None,
+            source=self.metadata.source if self.metadata != None else None,
+            start_date=returns_df.index[0],
+            end_date=returns_df.index[-1],
+            is_returns=True,
+            frequency=self.metadata.frequency if self.metadata != None else None,
+            currency=self.metadata.currency if self.metadata != None else None,
+            additional_info=self.metadata.additional_info if self.metadata != None else {}
+        )
         
-        return returns_df
+        logger.info(f"Returns calculation complete. Data points: {len(returns_df)}")
+        return TimeSeries(returns_df, returns_metadata)
     
     def rolling(self, window: int, min_periods: Optional[int] = None) -> 'TimeSeries':
         """
@@ -217,28 +255,28 @@ class TimeSeries:
         Calculate the cumulative returns of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.add(1).cumprod() - 1
+        return returns.data.add(1).cumprod() - 1
     
     def volatility(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the volatility of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.std() 
+        return returns.data.std() 
     
     def mean_return(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the mean return of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.mean()
+        return returns.data.mean()
     
     def sharpe_ratio(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return (returns.mean() / returns.std()) * np.sqrt(252)
+        return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
     
     def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
@@ -261,40 +299,31 @@ class TimeSeries:
         Calculate the Value at Risk (VaR) of the time series.
         """
         if percentage:
-            returns = self.returns(intraday_only, method)
+            return self.returns(intraday_only, method).data.quantile(confidence_level)
         else:
-            returns = self.data.diff()
-        return returns.quantile(confidence_level)
+            return self.data.diff().quantile(confidence_level)
     
     def skewness(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the skewness of the time series.
         """
-        returns = self.returns(intraday_only, method)
-        skew_map = {}
-        for col in returns.columns:
-            skew_map[col] = returns[col].skew()
-        return skew_map
+        return self.returns(intraday_only, method).data.skew()
     
     def kurtosis(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the kurtosis of the time series.
         """
-        returns = self.returns(intraday_only, method)
-        kurt_map = {}
-        for col in returns.columns:
-            kurt_map[col] = returns[col].kurt()
-        return kurt_map
+        return self.returns(intraday_only, method).data.kurt()
     
     def autocorrelation(self, lag: int = 1, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the autocorrelation of the time series.
         """
-        returns = self.returns(intraday_only, method)
+        returns_df = self.returns(intraday_only, method).data
         acorr_map = {}
-        for col in returns.columns:
-            acorr_map[col] = returns[col].autocorr(lag)
-        return acorr_map
+        for col in returns_df.columns:
+            acorr_map[col] = returns_df[col].autocorr(lag)
+        return pd.Series(acorr_map)
         
     
     

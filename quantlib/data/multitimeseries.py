@@ -1,10 +1,10 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import pandas as pd
 import numpy as np
 
 from .timeseries import TimeSeries, TimeSeriesMetadata
 
-class MultiTimeSeries:
+class MultiTimeSeries(TimeSeries):
     """
     Class for handling multiple time series together.
     
@@ -13,25 +13,36 @@ class MultiTimeSeries:
     and risk metrics.
     """
     
-    def __init__(self, timeseries: List[TimeSeries]):
+    def __init__(self, timeseries: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame]):
         """
         Initialize a MultiTimeSeries object.
         
         Args:
             timeseries: List of TimeSeries objects to combine
         """
-        if not timeseries:
-            raise ValueError("At least one TimeSeries must be provided")
-            
-        # Store original time series
-        self.timeseries = timeseries
-        
-        # Align all time series to common index
-        self._align_series()
+        # Handle different input types
+        if isinstance(timeseries, pd.DataFrame):
+            # Single DataFrame - split into list of TimeSeries by columns
+            self.data = timeseries
+            self.timeseries = [TimeSeries(timeseries[[col]], None) for col in timeseries.columns]
+        elif isinstance(timeseries, list):
+            if not timeseries:
+                raise ValueError("At least one TimeSeries must be provided")
+            if all(isinstance(ts, TimeSeries) for ts in timeseries):
+                # List of TimeSeries objects
+                self.timeseries = timeseries
+            elif all(isinstance(ts, pd.DataFrame) for ts in timeseries) or all(isinstance(ts, pd.Series) for ts in timeseries):
+                # List of DataFrames
+                self.timeseries = [TimeSeries(ts, None) for ts in timeseries]
+            else:
+                raise ValueError("All elements in list must be either TimeSeries objects or pandas DataFrames")
+            self._align_series()
+        else:
+            raise ValueError("Input must be either a pandas DataFrame or a list of TimeSeries/DataFrame objects")
         
         # Create combined metadata
         self.metadata = self._create_metadata()
-    
+
     def _align_series(self) -> None:
         """Align all time series to a common index."""
         # Get common index
@@ -43,52 +54,74 @@ class MultiTimeSeries:
             raise ValueError("No common dates found between time series")
             
         # Align all series to common index
-        self.aligned_data = pd.DataFrame(index=common_index)
+        self.data = pd.DataFrame(index=common_index)
         for ts in self.timeseries:
-            self.aligned_data[ts.metadata.symbol] = ts.data['close']
+            col_index = 0
+            for col in ts.data.columns:
+                if ts.metadata != None and ts.metadata.symbol != None:
+                    self.data[ts.metadata.symbol + '_' + col] = ts.data[col]
+                else:
+                    index_name = '_' + str(col_index) if col_index > 0 else ''
+                    self.data[col + index_name] = ts.data[col]
+                col_index += 1
+
     
     def _create_metadata(self) -> TimeSeriesMetadata:
         """Create metadata for the combined time series."""
         return TimeSeriesMetadata(
-            symbol=",".join(ts.metadata.symbol for ts in self.timeseries),
+            symbol=",".join(ts.metadata.symbol for ts in self.timeseries if ts.metadata != None and ts.metadata.symbol != None),
             source="combined",
-            start_date=self.aligned_data.index[0],
-            end_date=self.aligned_data.index[-1],
-            frequency=self.timeseries[0].metadata.frequency,
-            currency=self.timeseries[0].metadata.currency,
+            start_date=self.data.index[0],
+            end_date=self.data.index[-1],
+            frequency=self.timeseries[0].metadata.frequency if self.timeseries[0].metadata != None else None,
+            currency=self.timeseries[0].metadata.currency if self.timeseries[0].metadata != None else None,
             additional_info={
                 'num_series': len(self.timeseries),
-                'symbols': [ts.metadata.symbol for ts in self.timeseries],
-                'sources': [ts.metadata.source for ts in self.timeseries]
+                'symbols': [ts.metadata.symbol for ts in self.timeseries if ts.metadata != None and ts.metadata.symbol != None],
+                'sources': [ts.metadata.source for ts in self.timeseries if ts.metadata != None and ts.metadata.source != None]
             }
         )
     
-    def correlation(self, method: str = 'pearson', min_periods: Optional[int] = None) -> pd.DataFrame:
+    def correlation(self, returns: bool = True, method: str = 'pearson', min_periods: Optional[int] = None) -> pd.DataFrame:
         """
         Calculate correlation matrix between time series.
         
         Args:
+            returns: Whether to use returns or original series
             method: Correlation method ('pearson', 'kendall', or 'spearman')
             min_periods: Minimum number of observations required
             
         Returns:
             DataFrame containing correlation matrix
         """
-        return self.aligned_data.corr(method=method, min_periods=min_periods)
+        if returns:
+            if self.metadata.is_returns:
+                logger.warning("Time series is already returns, be aware that the correlation will be calculated on the series returns.\
+                                If you want to calculate the correlation on the original series, set returns to False.")
+            return self.returns().data.corr(method=method, min_periods=min_periods)
+        else:
+            return self.data.corr(method=method, min_periods=min_periods)
     
-    def covariance(self, min_periods: Optional[int] = None) -> pd.DataFrame:
+    def covariance(self, returns: bool = True, min_periods: Optional[int] = None) -> pd.DataFrame:
         """
         Calculate covariance matrix between time series.
         
         Args:
+            returns: Whether to use returns or original series
             min_periods: Minimum number of observations required
             
         Returns:
             DataFrame containing covariance matrix
         """
-        return self.aligned_data.cov(min_periods=min_periods)
+        if returns:
+            if self.metadata.is_returns:
+                logger.warning("Time series is already returns, be aware that the covariance will be calculated on the series returns.\
+                                If you want to calculate the covariance on the original series, set returns to False.")
+            return self.returns().data.cov(min_periods=min_periods)
+        else:
+            return self.data.cov(min_periods=min_periods)
     
-    def returns(self, method: str = 'log') -> 'MultiTimeSeries':
+    def returns(self, intraday_only: bool = False, method: str = 'simple') -> 'MultiTimeSeries':
         """
         Calculate returns for all time series.
         
@@ -98,34 +131,44 @@ class MultiTimeSeries:
         Returns:
             New MultiTimeSeries object with returns data
         """
+        if self.metadata.is_returns:
+            logger.warning("Time series is already returns, be aware that the returns will be calculated on the series returns.\
+                            If you want to calculate the returns on the original series, use this object directly.")
         returns_series = []
         for ts in self.timeseries:
             returns_series.append(ts.returns(method=method))
         return MultiTimeSeries(returns_series)
     
-    def portfolio_returns(self, weights: Dict[str, float]) -> TimeSeries:
+    def portfolio_returns(self, weights: Dict[str, float], percentage: bool = True, 
+                          intraday_only: bool = False, method: str = 'simple', shares: bool = False) -> pd.DataFrame:
         """
         Calculate portfolio returns using given weights.
         
         Args:
             weights: Dictionary mapping symbols to weights
-            
+            percentage: Whether to use percentage returns
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method ('log' or 'simple')
+            shares: Whether to weights as number of shares instead of percentage
         Returns:
-            TimeSeries object containing portfolio returns
+            pd.DataFrame object containing portfolio returns
         """
         # Validate weights
-        if not all(symbol in self.aligned_data.columns for symbol in weights.keys()):
+        if not all(symbol in self.data.columns for symbol in weights.keys()):
             raise ValueError("All symbols in weights must be present in the time series")
             
         if not np.isclose(sum(weights.values()), 1.0):
             raise ValueError("Weights must sum to 1.0")
             
         # Calculate portfolio returns
-        returns = self.returns()
-        portfolio_returns = pd.Series(0.0, index=returns.aligned_data.index)
+        if percentage:
+            data = self.returns(intraday_only, method)
+        else:
+            data = self.data
+        portfolio_returns = pd.Series(0.0, index=data.index)
         
         for symbol, weight in weights.items():
-            portfolio_returns += weight * returns.aligned_data[symbol]
+            portfolio_returns += weight * data[symbol]
             
         # Create portfolio time series
         portfolio_data = pd.DataFrame({'returns': portfolio_returns})
@@ -159,8 +202,8 @@ class MultiTimeSeries:
             min_periods = window
             
         correlations = {}
-        for i in range(len(self.aligned_data) - window + 1):
-            window_data = self.aligned_data.iloc[i:i+window]
+        for i in range(len(self.data) - window + 1):
+            window_data = self.data.iloc[i:i+window]
             if len(window_data) >= min_periods:
                 date = window_data.index[-1]
                 correlations[date] = window_data.corr()
