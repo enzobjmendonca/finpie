@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 import pandas as pd
 
-from ..timeseries import TimeSeries, TimeSeriesMetadata
+from quantlib.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 class DataSource(ABC):
     """

@@ -89,7 +89,7 @@ class TimeSeries:
         
         return TimeSeries(resampled_data, new_metadata)
     
-    def returns(self, method: str = 'log') -> 'TimeSeries':
+    def returns(self, method: str = 'simple') -> 'TimeSeries':
         """
         Calculate returns for the time series.
         
@@ -103,25 +103,26 @@ class TimeSeries:
             raise ValueError("Method must be either 'log' or 'simple'")
             
         if method == 'log':
-            returns_data = np.log(self.data['close'] / self.data['close'].shift(1))
+            returns_df = np.log(self.data / self.data.shift(1))
         else:
-            returns_data = self.data['close'].pct_change()
+            returns_df = self.data.pct_change()
             
-        returns_df = pd.DataFrame({'returns': returns_data})
-        
         # Create new metadata
-        new_metadata = TimeSeriesMetadata(
-            symbol=f"{self.metadata.symbol}_returns",
-            source=self.metadata.source,
-            start_date=returns_df.index[0],
-            end_date=returns_df.index[-1],
-            frequency=self.metadata.frequency,
-            currency=self.metadata.currency,
-            additional_info={
+        if (self.metadata != None):
+            new_metadata = TimeSeriesMetadata(
+                symbol=f"{self.metadata.symbol}_returns",
+                source=self.metadata.source,
+                start_date=returns_df.index[0],
+                end_date=returns_df.index[-1],
+                frequency=self.metadata.frequency,
+                currency=self.metadata.currency,
+                additional_info={
                 **self.metadata.additional_info,
-                'return_type': method
-            }
-        )
+                    'return_type': method
+                }
+            )
+        else:
+            new_metadata = None
         
         return TimeSeries(returns_df, new_metadata)
     
@@ -140,10 +141,10 @@ class TimeSeries:
             min_periods = window
             
         rolling_data = pd.DataFrame({
-            'mean': self.data['close'].rolling(window, min_periods=min_periods).mean(),
-            'std': self.data['close'].rolling(window, min_periods=min_periods).std(),
-            'min': self.data['close'].rolling(window, min_periods=min_periods).min(),
-            'max': self.data['close'].rolling(window, min_periods=min_periods).max()
+            'mean': self.data.rolling(window, min_periods=min_periods).mean(),
+            'std': self.data.rolling(window, min_periods=min_periods).std(),
+            'min': self.data.rolling(window, min_periods=min_periods).min(),
+            'max': self.data.rolling(window, min_periods=min_periods).max()
         })
         
         # Create new metadata
@@ -213,39 +214,43 @@ class TimeSeries:
     
     def __repr__(self) -> str:
         """String representation of the TimeSeries object."""
-        return (f"TimeSeries(symbol='{self.metadata.symbol}', "
-                f"source='{self.metadata.source}', "
-                f"start_date='{self.start_date}', "
-                f"end_date='{self.end_date}', "
-                f"frequency='{self.frequency}')")
+        if (self.metadata != None):
+            return (f"TimeSeries(symbol='{self.metadata.symbol}', "
+                    f"source='{self.metadata.source}', "
+                    f"start_date='{self.start_date}', "
+                    f"end_date='{self.end_date}', "
+                    f"frequency='{self.frequency}')")
+        else:
+            return (f"TimeSeries(data={self.data}, "
+                    f"metadata={self.metadata})")
 
     def cum_returns(self, intraday_only: bool = False) -> pd.Series:
         """
         Calculate the cumulative returns of the time series.
         """
         returns = self.returns(intraday_only)
-        return returns.add(1).cumprod() - 1
+        return returns.data.add(1).cumprod() - 1
     
     def volatility(self, intraday_only: bool = False) -> pd.Series:
         """
         Calculate the volatility of the time series.
         """
         returns = self.returns(intraday_only)
-        return returns.std() 
+        return returns.data.std() 
     
     def mean_return(self, intraday_only: bool = False) -> pd.Series:
         """
         Calculate the mean return of the time series.
         """
         returns = self.returns(intraday_only)
-        return returns.mean()
+        return returns.data.mean()
     
     def sharpe_ratio(self, intraday_only: bool = False) -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
         """
         returns = self.returns(intraday_only)
-        return returns.mean() / returns.std() 
+        return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
     
     def max_drawdown(self, intraday_only: bool = False) -> pd.Series:
         """

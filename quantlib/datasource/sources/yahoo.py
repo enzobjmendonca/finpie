@@ -4,7 +4,7 @@ import yfinance as yf
 import pandas as pd
 
 from .base import DataSource
-from ..timeseries import TimeSeries, TimeSeriesMetadata
+from quantlib.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 class YahooFinanceSource(DataSource):
     """

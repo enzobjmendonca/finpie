@@ -8,7 +8,7 @@ from .sources.base import DataSource
 from .sources.yahoo import YahooFinanceSource
 from .sources.alpha_vantage import AlphaVantageSource
 from .sources.mt5 import MT5Source
-from .timeseries import TimeSeries
+from quantlib.data.timeseries import TimeSeries
 
 class DataService:
     """

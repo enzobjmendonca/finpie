@@ -6,7 +6,7 @@ import platform
 import warnings
 
 from .base import DataSource
-from ..timeseries import TimeSeries, TimeSeriesMetadata
+from quantlib.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 # Only import MT5 on Windows
 if platform.system() == 'Windows':
