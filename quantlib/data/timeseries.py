@@ -89,15 +89,16 @@ class TimeSeries:
         
         return TimeSeries(resampled_data, new_metadata)
     
-    def returns(self, method: str = 'simple') -> 'TimeSeries':
+    def returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate returns for the time series.
         
         Args:
+            intraday_only: Whether to drop the first record of each day
             method: Return calculation method ('log' or 'simple')
             
         Returns:
-            New TimeSeries object with returns data
+            pd.Series with returns data
         """
         if method not in ['log', 'simple']:
             raise ValueError("Method must be either 'log' or 'simple'")
@@ -106,25 +107,12 @@ class TimeSeries:
             returns_df = np.log(self.data / self.data.shift(1))
         else:
             returns_df = self.data.pct_change()
-            
-        # Create new metadata
-        if (self.metadata != None):
-            new_metadata = TimeSeriesMetadata(
-                symbol=f"{self.metadata.symbol}_returns",
-                source=self.metadata.source,
-                start_date=returns_df.index[0],
-                end_date=returns_df.index[-1],
-                frequency=self.metadata.frequency,
-                currency=self.metadata.currency,
-                additional_info={
-                **self.metadata.additional_info,
-                    'return_type': method
-                }
-            )
-        else:
-            new_metadata = None
         
-        return TimeSeries(returns_df, new_metadata)
+        if intraday_only:
+            # Group by date and drop first record of each day
+            returns_df = returns_df.groupby(returns_df.index.date).apply(lambda x: x.iloc[1:]).reset_index(level=0, drop=True)
+        
+        return returns_df
     
     def rolling(self, window: int, min_periods: Optional[int] = None) -> 'TimeSeries':
         """
@@ -224,41 +212,43 @@ class TimeSeries:
             return (f"TimeSeries(data={self.data}, "
                     f"metadata={self.metadata})")
 
-    def cum_returns(self, intraday_only: bool = False) -> pd.Series:
+    def cum_returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the cumulative returns of the time series.
         """
-        returns = self.returns(intraday_only)
-        return returns.data.add(1).cumprod() - 1
+        returns = self.returns(intraday_only, method)
+        return returns.add(1).cumprod() - 1
     
-    def volatility(self, intraday_only: bool = False) -> pd.Series:
+    def volatility(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the volatility of the time series.
         """
-        returns = self.returns(intraday_only)
-        return returns.data.std() 
+        returns = self.returns(intraday_only, method)
+        return returns.std() 
     
-    def mean_return(self, intraday_only: bool = False) -> pd.Series:
+    def mean_return(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the mean return of the time series.
         """
-        returns = self.returns(intraday_only)
-        return returns.data.mean()
+        returns = self.returns(intraday_only, method)
+        return returns.mean()
     
-    def sharpe_ratio(self, intraday_only: bool = False) -> pd.Series:
+    def sharpe_ratio(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
         """
-        returns = self.returns(intraday_only)
-        return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
+        returns = self.returns(intraday_only, method)
+        return (returns.mean() / returns.std()) * np.sqrt(252)
     
-    def max_drawdown(self, intraday_only: bool = False) -> pd.Series:
+    def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the maximum drawdown of the time series.
         """
-        returns = self.returns(intraday_only)
         # Calculate cumulative returns
-        cum_rets = self.cum_returns(intraday_only)
+        if percentage:
+            cum_rets = self.cum_returns(intraday_only, method)
+        else:
+            cum_rets = self.data
         # Calculate running maximum
         running_max = cum_rets.expanding().max()
         # Calculate drawdown
@@ -266,39 +256,39 @@ class TimeSeries:
         # Get the maximum drawdown
         return drawdown.min()
 
-    def value_at_risk(self, confidence_level: float = 0.05, intraday_only: bool = False) -> pd.Series:
+    def value_at_risk(self, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Value at Risk (VaR) of the time series.
         """
-        returns = self.returns(intraday_only)
+        returns = self.returns(intraday_only, method)
         return returns.quantile(confidence_level)    
     
-    def expected_shortfall(self, confidence_level: float = 0.05, intraday_only: bool = False) -> pd.Series:
+    def expected_shortfall(self, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Expected Shortfall (ES) of the time series.
         """
-        returns = self.returns(intraday_only)
+        returns = self.returns(intraday_only, method)
         return returns.quantile(confidence_level)    
     
-    def skewness(self, intraday_only: bool = False) -> pd.Series:
+    def skewness(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the skewness of the time series.
         """
-        returns = self.returns(intraday_only)
+        returns = self.returns(intraday_only, method)
         return returns.skew()    
     
-    def kurtosis(self, intraday_only: bool = False) -> pd.Series:
+    def kurtosis(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the kurtosis of the time series.
         """
-        returns = self.returns(intraday_only)
+        returns = self.returns(intraday_only, method)
         return returns.kurt()    
     
-    def autocorrelation(self, lag: int = 1, intraday_only: bool = False) -> pd.Series:
+    def autocorrelation(self, lag: int = 1, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the autocorrelation of the time series.
         """
-        returns = self.returns(intraday_only)
+        returns = self.returns(intraday_only, method)
         return returns.autocorr(lag)
         
     
