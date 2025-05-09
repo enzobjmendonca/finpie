@@ -166,12 +166,11 @@ class TimeSeries:
         if min_periods is None:
             min_periods = window
             
-        rolling_data = pd.DataFrame({
-            'mean': self.data.rolling(window, min_periods=min_periods).mean(),
-            'std': self.data.rolling(window, min_periods=min_periods).std(),
-            'min': self.data.rolling(window, min_periods=min_periods).min(),
-            'max': self.data.rolling(window, min_periods=min_periods).max()
-        })
+        rolling_data = pd.DataFrame()
+        rolling_data['mean'] = self.data.rolling(window, min_periods=min_periods).mean()
+        rolling_data['std'] = self.data.rolling(window, min_periods=min_periods).std()
+        rolling_data['min'] = self.data.rolling(window, min_periods=min_periods).min()
+        rolling_data['max'] = self.data.rolling(window, min_periods=min_periods).max()
         
         # Create new metadata
         new_metadata = TimeSeriesMetadata(
