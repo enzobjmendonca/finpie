@@ -84,6 +84,7 @@ class YahooFinanceSource(DataSource):
         # Get metadata
         info = ticker.info
         metadata = TimeSeriesMetadata(
+            name=symbol,
             symbol=symbol,
             source='Yahoo Finance',
             start_date=df.index[0],

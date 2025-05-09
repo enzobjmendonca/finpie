@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 
 from .timeseries import TimeSeries, TimeSeriesMetadata
-from ..analytics.statistical import StatisticalAnalytics
 
 class SpreadTimeSeries(TimeSeries):
     """
@@ -23,22 +22,25 @@ class SpreadTimeSeries(TimeSeries):
             hedge_ratio: Optional hedge ratio for series2. If None, will be calculated using OLS regression
         """
         # Validate inputs
-        if not isinstance(series1, TimeSeries) or not isinstance(series2, TimeSeries):
-            raise TypeError("Both series must be TimeSeries objects")
+        if not isinstance(series1, TimeSeries):
+            series1 = TimeSeries(series1)
+        if not isinstance(series2, TimeSeries):
+            series2 = TimeSeries(series2)
             
         # Align data
-        spread_data = series1.join(series2, how='inner', lsuffix='_series1', rsuffix='_series2')
+        spread_data = series1.data.join(series2.data, how='inner', lsuffix='_series1', rsuffix='_series2')
 
         # Calculate hedge ratio if not provided
         #TODO: use dynamic hedge ratio to avoid look-ahead bias
+        self.hedge_ratio = hedge_ratio
         if hedge_ratio is None:
-            hedge_ratio = self._calculate_hedge_ratio(spread_data['close_series1'], spread_data['close_series2'])
-            
+            self.hedge_ratio = self._calculate_hedge_ratio(spread_data[spread_data.columns[0]], spread_data[spread_data.columns[1]])
         # Calculate spread
-        spread_data['spread'] = spread_data['close_series1'] - hedge_ratio * spread_data['close_series2']
+        spread_data['spread'] = spread_data['close_series1'] - self.hedge_ratio * spread_data['close_series2']
         
         # Create metadata
         metadata = TimeSeriesMetadata(
+            name=f"{series1.metadata.name}-{series2.metadata.name}",
             symbol=f"{series1.metadata.symbol}-{series2.metadata.symbol}",
             source="spread",
             start_date=spread_data.index[0],
@@ -48,43 +50,40 @@ class SpreadTimeSeries(TimeSeries):
             additional_info={
                 'series1': series1.metadata.symbol,
                 'series2': series2.metadata.symbol,
-                'hedge_ratio': hedge_ratio,
+                'hedge_ratio': self.hedge_ratio,
                 'series1_info': series1.metadata.additional_info,
                 'series2_info': series2.metadata.additional_info
             }
         )
         
-        super().__init__(spread_data, metadata)
+        super().__init__(spread_data['spread'], metadata)
         self.series1 = series1
         self.series2 = series2
-        self.hedge_ratio = hedge_ratio
-        self._analytics = StatisticalAnalytics(self, 'spread')
     
-    def _calculate_hedge_ratio(self, series1: TimeSeries, series2: TimeSeries) -> float:
+    def _calculate_hedge_ratio(self, x: pd.Series, y: pd.Series) -> float:
         """
-        Calculate the hedge ratio using OLS regression.
+        Calculate the hedge ratio using OLS regression. Both series must have the same index.
         
         Args:
-            series1: First TimeSeries object
-            series2: Second TimeSeries object
+            series1: First pd.Series object
+            series2: Second pd.Series object
             
         Returns:
             Calculated hedge ratio
-        """
-        # Align data
-        common_index = series1.data.index.intersection(series2.data.index)
-        if len(common_index) == 0:
-            raise ValueError("No common dates found between the two series")
-            
-        y = series1.data.loc[common_index, 'close']
-        X = series2.data.loc[common_index, 'close']
-        
+        """        
         # Add constant for regression
-        X = pd.concat([pd.Series(1, index=X.index), X], axis=1)
+        X = pd.concat([pd.Series(1, index=x.index), x], axis=1)
         
         # Calculate hedge ratio using OLS
         beta = np.linalg.inv(X.T @ X) @ X.T @ y
         return beta[1]  # Return the coefficient for series2
+    
+    def get_hedge_ratio(self) -> float:
+        """
+        Get the hedge ratio.
+        """
+        return self.hedge_ratio
+    
     
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -96,6 +95,7 @@ class SpreadTimeSeries(TimeSeries):
         return {
             'data': self.data.to_dict(),
             'metadata': {
+                'name': self.metadata.name,
                 'symbol': self.metadata.symbol,
                 'source': self.metadata.source,
                 'start_date': self.metadata.start_date.isoformat(),

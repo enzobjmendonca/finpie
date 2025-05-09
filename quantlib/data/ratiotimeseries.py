@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 
 from .timeseries import TimeSeries, TimeSeriesMetadata
-from ..analytics.statistical import StatisticalAnalytics
 
 class RatioTimeSeries(TimeSeries):
     """
@@ -22,15 +21,18 @@ class RatioTimeSeries(TimeSeries):
             denominator: TimeSeries object for the denominator
         """
         # Validate inputs
-        if not isinstance(numerator, TimeSeries) or not isinstance(denominator, TimeSeries):
-            raise TypeError("Both numerator and denominator must be TimeSeries objects")
+        if not isinstance(numerator, TimeSeries):
+            numerator = TimeSeries(numerator)
+        if not isinstance(denominator, TimeSeries):
+            denominator = TimeSeries(denominator)
             
         # Calculate ratio
-        ratio_data = numerator.join(denominator, how='inner', lsuffix='_numerator', rsuffix='_denominator')
-        ratio_data['ratio'] = ratio_data['close_numerator'] / ratio_data['close_denominator']
+        ratio_data = numerator.data.join(denominator.data, how='inner', lsuffix='_numerator', rsuffix='_denominator')
+        ratio_data['ratio'] = ratio_data[ratio_data.columns[0]] / ratio_data[ratio_data.columns[1]]
         
         # Create metadata
         metadata = TimeSeriesMetadata(
+            name=f"{numerator.metadata.symbol} ({numerator.metadata.name})/{denominator.metadata.symbol} ({denominator.metadata.name})",
             symbol=f"{numerator.metadata.symbol}/{denominator.metadata.symbol}",
             source="ratio",
             start_date=ratio_data.index[0],
@@ -45,7 +47,7 @@ class RatioTimeSeries(TimeSeries):
             }
         )
         
-        super().__init__(ratio_data, metadata)
+        super().__init__(ratio_data['ratio'], metadata)
         self.numerator = numerator
         self.denominator = denominator
     

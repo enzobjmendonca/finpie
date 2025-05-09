@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TimeSeriesMetadata:
     """Metadata for a time series."""
+    name: str
     symbol: str
     source: str
     start_date: datetime
@@ -29,7 +30,7 @@ class TimeSeries:
     and statistical measures.
     """
     
-    def __init__(self, data: pd.DataFrame, metadata: TimeSeriesMetadata):
+    def __init__(self, data: pd.DataFrame, metadata: TimeSeriesMetadata = None):
         """
         Initialize a TimeSeries object.
         
@@ -39,8 +40,9 @@ class TimeSeries:
         """
         logger.info(f"Initializing TimeSeries for symbol: {metadata.symbol if metadata else 'Unknown'}")
         self.data = data
-        self.metadata = metadata
-        
+        self.metadata = metadata if metadata != None else TimeSeriesMetadata(name='', symbol='', source='', 
+                                                                             start_date=None, end_date=None, frequency='', 
+                                                                             currency='', additional_info={})
         # Validate data
         if not isinstance(data.index, pd.DatetimeIndex):
             logger.error("Data must have a DatetimeIndex")
@@ -52,8 +54,11 @@ class TimeSeries:
 
         if isinstance(data, pd.Series):
             logger.debug("Converting Series to DataFrame")
+            self.metadata.name = self.data.name
             self.data = data.to_frame()
-            
+        else:
+            self.metadata.name = self.data.columns[0]
+
         # Sort index if not already sorted
         if not data.index.is_monotonic_increasing:
             logger.debug("Sorting index as it's not monotonic increasing")
@@ -139,6 +144,7 @@ class TimeSeries:
             returns_df = returns_df.groupby(returns_df.index.date).apply(lambda x: x.iloc[1:]).reset_index(level=0, drop=True)
             
         returns_metadata = TimeSeriesMetadata(
+            name=self.metadata.name + '_returns',
             symbol=self.metadata.symbol + '_returns' if self.metadata != None else None,
             source=self.metadata.source if self.metadata != None else None,
             start_date=returns_df.index[0],
@@ -152,12 +158,13 @@ class TimeSeries:
         logger.info(f"Returns calculation complete. Data points: {len(returns_df)}")
         return TimeSeries(returns_df, returns_metadata)
     
-    def rolling(self, window: int, min_periods: Optional[int] = None) -> 'TimeSeries':
+    def rolling(self, window: int, stats: List[str] = ['mean', 'std', 'min', 'max'], min_periods: Optional[int] = None) -> pd.DataFrame:
         """
         Calculate rolling statistics for the time series.
         
         Args:
             window: Size of the rolling window
+            stats: List of statistics to calculate available stats: ['mean', 'std', 'min', 'max', 'skew', 'kurt', 'sum', 'count', 'median', 'var', 'quantiles']
             min_periods: Minimum number of observations required
             
         Returns:
@@ -167,27 +174,17 @@ class TimeSeries:
             min_periods = window
             
         rolling_data = pd.DataFrame()
-        rolling_data['mean'] = self.data.rolling(window, min_periods=min_periods).mean()
-        rolling_data['std'] = self.data.rolling(window, min_periods=min_periods).std()
-        rolling_data['min'] = self.data.rolling(window, min_periods=min_periods).min()
-        rolling_data['max'] = self.data.rolling(window, min_periods=min_periods).max()
-        
-        # Create new metadata
-        new_metadata = TimeSeriesMetadata(
-            symbol=f"{self.metadata.symbol}_rolling",
-            source=self.metadata.source,
-            start_date=rolling_data.index[0],
-            end_date=rolling_data.index[-1],
-            frequency=self.metadata.frequency,
-            currency=self.metadata.currency,
-            additional_info={
-                **self.metadata.additional_info,
-                'window': window,
-                'min_periods': min_periods
-            }
-        )
-        
-        return TimeSeries(rolling_data, new_metadata)
+
+        for col in self.data.columns:
+            for stat in stats:
+                if stat == 'quantiles':
+                    for q in [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99]:
+                        rolling_data[f'{col}_quantile_{q}'] = self.data.rolling(window, min_periods=min_periods)[col].quantile(q)
+                elif stat in ['mean', 'std', 'min', 'max', 'skew', 'kurt', 'sum', 'count', 'median', 'var']:
+                    rolling_data[f'{col}_{stat}'] = self.data.rolling(window, min_periods=min_periods)[col].agg(stat)
+                else:
+                    raise ValueError(f"Invalid statistic: {stat}")
+        return rolling_data
     
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -199,6 +196,7 @@ class TimeSeries:
         return {
             'data': self.data.to_dict(),
             'metadata': {
+                'name': self.metadata.name,
                 'symbol': self.metadata.symbol,
                 'source': self.metadata.source,
                 'start_date': self.metadata.start_date.isoformat(),
@@ -241,6 +239,7 @@ class TimeSeries:
         """String representation of the TimeSeries object."""
         if (self.metadata != None):
             return (f"TimeSeries(symbol='{self.metadata.symbol}', "
+                    f"name='{self.metadata.name}', "
                     f"source='{self.metadata.source}', "
                     f"start_date='{self.start_date}', "
                     f"end_date='{self.end_date}', "

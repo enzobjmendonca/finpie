@@ -115,6 +115,7 @@ class MT5Source(DataSource):
             raise ValueError(f"Symbol {symbol} not found in MT5")
 
         metadata = TimeSeriesMetadata(
+            name=symbol,
             symbol=symbol,
             source='MetaTrader 5',
             start_date=df.index[0],
@@ -194,6 +195,7 @@ class MT5Source(DataSource):
         info = self.get_symbol_info(symbol)
 
         metadata = TimeSeriesMetadata(
+            name=symbol,
             symbol=symbol,
             source='MetaTrader 5',
             start_date=df.index[0],
