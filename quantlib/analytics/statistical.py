@@ -12,7 +12,7 @@ class StatisticalAnalytics:
     in quantitative finance, such as z-scores, half-life, and mean reversion metrics.
     """
     
-    def __init__(self, timeseries: TimeSeries, column: str = 'close'):
+    def __init__(self, timeseries: TimeSeries, column: str = None):
         """
         Initialize StatisticalAnalytics object.
         
@@ -27,8 +27,8 @@ class StatisticalAnalytics:
             raise ValueError(f"Column '{column}' not found in time series data")
             
         self.timeseries = timeseries
-        self.column = column
-        self.data = timeseries.data[column]
+        self.column = column if column is not None else timeseries.data.columns[0]
+        self.data = timeseries.data[self.column]
     
     def zscore(self, window: int = 20, min_periods: Optional[int] = None) -> pd.Series:
         """
