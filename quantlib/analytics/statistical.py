@@ -4,7 +4,7 @@ import numpy as np
 
 from ..data.timeseries import TimeSeries
 
-class StatisticalAnalytics:
+class Statistical:
     """
     Class for performing statistical analysis on time series data.
     
