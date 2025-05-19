@@ -179,6 +179,7 @@ class AlphaVantageSource(DataSource):
         # Get metadata
         info = self.get_symbol_info(symbol)
         metadata = TimeSeriesMetadata(
+            name=symbol,
             symbol=symbol,
             source='Alpha Vantage',
             start_date=df.index[0],

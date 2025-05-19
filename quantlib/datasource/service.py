@@ -54,7 +54,7 @@ class DataService:
         """
         return list(self._sources.keys())
 
-    def get_ohlc_prices(self, symbol: str, source: str = 'yahoo', 
+    def get_ohlc_prices(self, symbol: str, source: str = 'yahoo_finance', 
                        start_date: Optional[str] = None, end_date: Optional[str] = None,
                        interval: str = '1d') -> TimeSeries:
         """
@@ -67,7 +67,7 @@ class DataService:
             end_date: End date in 'YYYY-MM-DD' format
             interval: Data interval (e.g., '1d' for daily, '1h' for hourly)
 
-        Returns:
+        Returns:s
             TimeSeries: The historical data with metadata
 
         Raises:
@@ -76,7 +76,7 @@ class DataService:
         data_source = self.get_source(source)
         return data_source.get_prices(symbol, start_date, end_date, interval, ['open', 'high', 'low', 'close'])
 
-    def get_close_prices(self, symbol: str, source: str = 'yahoo', 
+    def get_close_prices(self, symbol: str, source: str = 'yahoo_finance', 
                        start_date: Optional[str] = None, end_date: Optional[str] = None,
                        interval: str = '1d') -> TimeSeries:
         """
@@ -98,7 +98,7 @@ class DataService:
         data_source = self.get_source(source)
         return data_source.get_prices(symbol, start_date, end_date, interval, ['close'])
 
-    def get_metadata(self, symbol: str, source: str = 'yahoo') -> Dict[str, Any]:
+    def get_metadata(self, symbol: str, source: str = 'yahoo_finance') -> Dict[str, Any]:
         """
         Get metadata for a symbol from a specific source.
 

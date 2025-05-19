@@ -60,8 +60,8 @@ class TimeSeries:
             self.metadata.name = self.data.columns[0]
 
         # Sort index if not already sorted
-        if not data.index.is_monotonic_increasing:
-            logger.debug("Sorting index as it's not monotonic increasing")
+        if not data.index.is_monotonic_increasing and not data.index.is_monotonic_decreasing:
+            logger.debug("Sorting index as it's not monotonic increasing or decreasing")
             self.data = data.sort_index()
             
         logger.info(f"TimeSeries initialized with {len(self.data)} data points from {self.start_date} to {self.end_date}")
