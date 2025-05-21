@@ -19,7 +19,7 @@ else:
     warnings.warn("MetaTrader5 is only available on Windows. MT5 functionality will be disabled.")
     mt5 = None
 
-MAX_PAYLOAD_SIZE = 100_000
+MAX_PAYLOAD_SIZE = 1_000_000
 
 class MT5Source(DataSource):
     """
