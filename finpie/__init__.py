@@ -14,10 +14,10 @@ from finpie.data.timeseries import TimeSeries
 from finpie.data.multitimeseries import MultiTimeSeries
 from finpie.data.ratiotimeseries import RatioTimeSeries
 from finpie.data.spreadtimeseries import SpreadTimeSeries
-from finpie.analytics.statistics import Statistics
+from finpie.analytics.statistical import Statistical
 from finpie.analytics.technical import Technical
 from finpie.analytics.llm import LLMForecaster, MarketTokenizer
 
 __all__ = ['StatusInvestSource', 'MT5Source', 'YahooFinanceSource', 'AlphaVantageSource', 'FundamentalsParams', 
             'TimeSeries', 'MultiTimeSeries', 'RatioTimeSeries', 'SpreadTimeSeries',
-            'Statistics', 'Technical', 'LLMForecaster', 'MarketTokenizer', 'DataService'] 
+            'Statistical', 'Technical', 'LLMForecaster', 'MarketTokenizer', 'DataService'] 
