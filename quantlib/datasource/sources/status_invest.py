@@ -89,3 +89,128 @@ class StatusInvestSource:
             raise ValueError(f"Failed to parse response: {str(e)}")
         except Exception as e:
             raise Exception(f"Unexpected error: {str(e)}")
+
+    def get_dividends_history(self, ticker: str, by_year: bool = False) -> pd.DataFrame:
+        """
+        Fetch dividends history for a given ticker.
+        
+        Args:
+            ticker: The ticker symbol of the stock
+            by_year: If True, return the dividends by year, otherwise return the dividends as paid
+        """
+        try:
+            self._respect_rate_limit()
+
+            url = f"https://statusinvest.com.br/acao/companytickerprovents?ticker={ticker}&chartProventsType=2"
+
+            logger.info(f"Making request to: {url}")
+
+            response = self.session.get(url)
+            response.raise_for_status()
+
+            data = response.json()
+
+            if not data:
+                raise ValueError("Empty response received")
+            
+            if by_year:
+                return pd.DataFrame(data['assetEarningsYearlyModels'])
+            else:
+                return pd.DataFrame(data['assetEarningsModels'])
+            
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to fetch dividends history: {str(e)}")
+        except ValueError as e:
+            raise ValueError(f"Failed to parse dividends history: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Unexpected error: {str(e)}")
+
+    def get_revenue_history(self, ticker: str, by_year: bool = False) -> pd.DataFrame:
+        """
+        Fetch revenue history for a given ticker.
+        
+        Args:
+            ticker: The ticker symbol of the stock
+            by_year: If True, return the revenue by year, otherwise return the revenue by quarter
+        """
+        try:
+            self._respect_rate_limit()
+
+            view_type = 0 if by_year else 1
+
+            url = f"https://statusinvest.com.br/acao/getrevenue?code={ticker}&type=2&viewType={view_type}"
+
+            logger.info(f"Making request to: {url}")
+
+            response = self.session.get(url)
+            response.raise_for_status()
+
+            data = response.json()
+
+            if not data:
+                raise ValueError("Empty response received")
+            
+            return pd.DataFrame(data)     
+            
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to fetch revenue history: {str(e)}")
+        except ValueError as e:
+            raise ValueError(f"Failed to parse revenue history: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Unexpected error: {str(e)}")
+
+    def get_margins_history(self, ticker: str) -> pd.DataFrame:
+        """
+        Fetch margins (%) history for a given ticker.
+        
+        Args:
+            ticker: The ticker symbol of the stock
+        """
+        
+        try:
+            self._respect_rate_limit()
+            
+            url = f"https://statusinvest.com.br/acao/getmargins?code={ticker}&type=2"
+
+            logger.info(f"Making request to: {url}")    
+
+            response = self.session.get(url)
+            response.raise_for_status()
+
+            data = response.json()
+
+            return pd.DataFrame(data)
+        
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to fetch margins history: {str(e)}")
+        except ValueError as e:
+            raise ValueError(f"Failed to parse margins history: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Unexpected error: {str(e)}")
+
+    def get_balance_sheet_history(self, ticker: str) -> pd.DataFrame:
+        """
+        Fetch balance sheet history for a given ticker.
+        
+        Args:
+            ticker: The ticker symbol of the stock
+        """
+        try:
+            self._respect_rate_limit()
+            
+            url = f"https://statusinvest.com.br/acao/getbsactivepassivechart?code={ticker}&type=2"
+
+            logger.info(f"Making request to: {url}")
+
+            response = self.session.get(url)
+            response.raise_for_status()
+
+            data = response.json()
+            return pd.DataFrame(data)
+        
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to fetch balance sheet history: {str(e)}")
+        except ValueError as e:
+            raise ValueError(f"Failed to parse balance sheet history: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Unexpected error: {str(e)}")
