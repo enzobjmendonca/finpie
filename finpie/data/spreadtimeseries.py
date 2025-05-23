@@ -2,7 +2,7 @@ from typing import Dict, Any, Optional, Union, List
 import pandas as pd
 import numpy as np
 
-from .timeseries import TimeSeries, TimeSeriesMetadata
+from finpie.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 class SpreadTimeSeries(TimeSeries):
     """

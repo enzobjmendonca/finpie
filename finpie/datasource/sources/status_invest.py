@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 import time
 from datetime import datetime
-from quantlib.datasource.sources.schemas.status_invest import FundamentalsParams
+from finpie.datasource.sources.schemas.status_invest import FundamentalsParams
 import logging
 
 logger = logging.getLogger(__name__)

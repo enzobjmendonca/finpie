@@ -22,8 +22,12 @@ wheels/
 
 # Virtual Environment
 venv/
+venvlinux/
 env/
 ENV/
+
+#Local project
+finpie/local/
 
 # IDE
 .idea/

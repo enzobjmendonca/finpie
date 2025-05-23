@@ -2,7 +2,7 @@ from typing import Optional, List, Union
 import pandas as pd
 import numpy as np
 
-from ..data.timeseries import TimeSeries
+from finpie.data.timeseries import TimeSeries
 
 class Statistical:
     """

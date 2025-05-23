@@ -7,14 +7,14 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = fh.read().splitlines()
 
 setup(
-    name="quantlib",
+    name="finpie",
     version="0.1.0",
     author="Enzo Mendonça",
     author_email="enzobjmendonca@gmail.com",
-    description="A comprehensive Python library for quantitative finance research and analysis",
+    description="A comprehensive Python library for Brazilian financial data analysis and quantitative research",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/enzobjmendonca/quantlib",
+    url="https://github.com/enzobjmendonca/finpie",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",

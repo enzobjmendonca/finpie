@@ -1,7 +1,7 @@
 from typing import Optional, Union, List
 import pandas as pd
 import numpy as np
-from ..data.timeseries import TimeSeries
+from finpie.data.timeseries import TimeSeries
 
 class Technical:
     """

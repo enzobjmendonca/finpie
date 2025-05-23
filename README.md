@@ -1,4 +1,4 @@
-# QuantLib
+# finpie
 
 A Python library for quantitative finance, providing tools for data handling, analysis, and trading strategies.
 
@@ -6,7 +6,7 @@ A Python library for quantitative finance, providing tools for data handling, an
 
 ### Regular Installation
 ```bash
-pip install quantlib
+pip install finpie
 ```
 
 ### Development Setup
@@ -49,7 +49,7 @@ pip install quantlib
    # Start Jupyter
    jupyter notebook
    
-   # Navigate to the quantlib/notebooks directory
+   # Navigate to the finpie/notebooks directory
    # Open the desired notebook (e.g., data_examples.ipynb)
    ```
 
@@ -58,7 +58,7 @@ pip install quantlib
 ### Basic Time Series Usage
 
 ```python
-from quantlib.data import TimeSeries, TimeSeriesMetadata
+from finpie.data import TimeSeries, TimeSeriesMetadata
 import pandas as pd
 from datetime import datetime
 
@@ -92,7 +92,7 @@ rolling_stats = ts.rolling(window=20)  # Calculate rolling statistics
 ### Statistical Analysis
 
 ```python
-from quantlib.analytics import StatisticalAnalytics
+from finpie.analytics import StatisticalAnalytics
 
 # Create analytics instance
 analytics = StatisticalAnalytics(ts, column='close')
@@ -110,7 +110,7 @@ signals = analytics.trading_signals(zscore_threshold=2.0, window=20)
 ### Ratio Analysis
 
 ```python
-from quantlib.data import RatioTimeSeries
+from finpie.data import RatioTimeSeries
 
 # Create ratio time series (e.g., for pair trading)
 ratio_ts = RatioTimeSeries(numerator_ts, denominator_ts)
@@ -130,7 +130,7 @@ signals = ratio_analytics.trading_signals()
 ### Spread Analysis
 
 ```python
-from quantlib.data import SpreadTimeSeries
+from finpie.data import SpreadTimeSeries
 
 # Create spread time series (e.g., for statistical arbitrage)
 spread_ts = SpreadTimeSeries(series1_ts, series2_ts)
@@ -152,8 +152,8 @@ signals = spread_analytics.trading_signals()
 ### Multiple Time Series Analysis
 
 ```python
-from quantlib.data import MultiTimeSeries
-from quantlib.data.service import DataService
+from finpie.data import MultiTimeSeries
+from finpie.data.service import DataService
 
 ds = DataService.create_default_service()
 ts1 = = service.get_close_prices(
@@ -195,7 +195,7 @@ rolling_correlations = multi_ts.rolling_correlation(window=20)
 ## Project Structure
 
 ```
-quantlib/
+finpie/
 ├── data/           # Data handling module
 ├── analytics/      # Analytics and modeling module
 ├── datasource/     # Data request module
