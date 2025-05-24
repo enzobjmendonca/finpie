@@ -1,0 +1,31 @@
+Analytics Module
+==============
+
+.. automodule:: finpie.analytics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Statistical Analytics
+------------------
+
+.. automodule:: finpie.analytics.statistical
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Technical Analytics
+----------------
+
+.. automodule:: finpie.analytics.technical
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+LLM Analytics
+-----------
+
+.. automodule:: finpie.analytics.llm
+   :members:
+   :undoc-members:
+   :show-inheritance: 

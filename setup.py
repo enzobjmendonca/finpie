@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="finpie",
-    version="0.1.0",
+    version="0.1.1",
     author="Enzo Mendonça",
     author_email="enzobjmendonca@gmail.com",
     description="A comprehensive Python library for Brazilian financial data analysis and quantitative research",
@@ -36,6 +36,10 @@ setup(
             "black>=23.0.0",
             "flake8>=6.0.0",
             "mypy>=1.0.0",
+            "sphinx>=7.0.0",
+            "sphinx-rtd-theme>=1.3.0",
+            "sphinx-autodoc-typehints>=1.25.0",
+            "myst-parser>=2.0.0",
         ],
         "notebooks": [
             "jupyter>=1.0.0",
