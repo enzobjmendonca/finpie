@@ -1,3 +1,10 @@
+"""
+Technical analysis tools for financial time series data.
+
+This module provides a comprehensive set of technical indicators commonly used in
+financial analysis, including moving averages, momentum indicators, and oscillators.
+"""
+
 from typing import Optional, Union, List
 import pandas as pd
 import numpy as np
@@ -6,7 +13,22 @@ from finpie.data.timeseries import TimeSeries
 class Technical:
     """
     A collection of technical indicators for quantitative and technical analysis.
-    All methods take a TimeSeries as input and return a TimeSeries as output.
+    
+    This class provides a comprehensive set of technical indicators commonly used in
+    financial analysis. All methods take a TimeSeries as input and return a TimeSeries
+    as output.
+    
+    Attributes:
+        timeseries (TimeSeries): The input time series data
+        data (pd.DataFrame): The actual data being analyzed
+        column (str): The column name to analyze
+    
+    Example:
+        >>> from finpie import TimeSeries, Technical
+        >>> ts = TimeSeries(data)
+        >>> tech = Technical(ts)
+        >>> sma = tech.sma(window=20)
+        >>> rsi = tech.rsi(window=14)
     """
     
     def __init__(self, timeseries: TimeSeries, column: str = None):
@@ -15,6 +37,10 @@ class Technical:
         
         Args:
             timeseries: TimeSeries object containing price data
+            column: Name of the column to analyze (default: first column)
+            
+        Raises:
+            TypeError: If timeseries is not a TimeSeries object
         """
         if not isinstance(timeseries, TimeSeries):
             raise TypeError("timeseries must be a TimeSeries object")
@@ -27,12 +53,18 @@ class Technical:
         """
         Calculate Simple Moving Average.
         
+        The SMA is calculated by taking the arithmetic mean of a set of values
+        over a specified time period.
+        
         Args:
             window: Size of the moving window
-            column: Column to calculate SMA for
             
         Returns:
             TimeSeries containing SMA values
+            
+        Example:
+            >>> sma = tech.sma(window=20)
+            >>> # sma.data contains the simple moving average values
         """
         sma = self.data[self.column].rolling(window=window).mean()
         return TimeSeries(pd.DataFrame({f'sma_{window}': sma}))
@@ -41,12 +73,18 @@ class Technical:
         """
         Calculate Exponential Moving Average.
         
+        The EMA gives more weight to recent prices, making it more responsive
+        to price changes than the SMA.
+        
         Args:
             window: Size of the moving window
-            column: Column to calculate EMA for
             
         Returns:
             TimeSeries containing EMA values
+            
+        Example:
+            >>> ema = tech.ema(window=20)
+            >>> # ema.data contains the exponential moving average values
         """
         ema = self.data[self.column].ewm(span=window, adjust=False).mean()
         return TimeSeries(pd.DataFrame({f'ema_{window}': ema}))
@@ -55,12 +93,21 @@ class Technical:
         """
         Calculate Relative Strength Index.
         
+        The RSI is a momentum oscillator that measures the speed and change of
+        price movements. It ranges from 0 to 100, with values above 70 indicating
+        overbought conditions and values below 30 indicating oversold conditions.
+        
         Args:
             window: Size of the moving window
-            column: Column to calculate RSI for
             
         Returns:
             TimeSeries containing RSI values
+            
+        Example:
+            >>> rsi = tech.rsi(window=14)
+            >>> # rsi.data contains the RSI values
+            >>> # Values above 70 indicate overbought conditions
+            >>> # Values below 30 indicate oversold conditions
         """
         delta = self.data[self.column].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
@@ -74,14 +121,22 @@ class Technical:
         """
         Calculate Moving Average Convergence Divergence.
         
+        The MACD is a trend-following momentum indicator that shows the relationship
+        between two moving averages of a security's price.
+        
         Args:
             fast: Fast period
             slow: Slow period
             signal: Signal period
-            column: Column to calculate MACD for
             
         Returns:
-            TimeSeries containing MACD momentum (histogram)
+            TimeSeries containing MACD histogram values
+            
+        Example:
+            >>> macd = tech.macd(fast=12, slow=26, signal=9)
+            >>> # macd.data contains the MACD histogram values
+            >>> # Positive values indicate bullish momentum
+            >>> # Negative values indicate bearish momentum
         """
         exp1 = self.data[self.column].ewm(span=fast, adjust=False).mean()
         exp2 = self.data[self.column].ewm(span=slow, adjust=False).mean()
@@ -89,17 +144,25 @@ class Technical:
         signal_line = macd.ewm(span=signal, adjust=False).mean()
         histogram = macd - signal_line
         
-        return TimeSeries(histogram)
+        return TimeSeries(pd.DataFrame({f'macd_hist': histogram}))
     
     def atr(self, window: int = 14) -> TimeSeries:
         """
         Calculate Average True Range.
+        
+        The ATR is a measure of volatility that shows the degree of price volatility
+        over a specified time period.
         
         Args:
             window: Size of the moving window
             
         Returns:
             TimeSeries containing ATR values
+            
+        Example:
+            >>> atr = tech.atr(window=14)
+            >>> # atr.data contains the ATR values
+            >>> # Higher values indicate higher volatility
         """
         high = self.data['high']
         low = self.data['low']
@@ -118,12 +181,21 @@ class Technical:
         """
         Calculate Stochastic Oscillator.
         
+        The Stochastic Oscillator is a momentum indicator comparing a particular
+        closing price to a range of prices over a certain period of time.
+        
         Args:
             k_window: %K period
             d_window: %D period
             
         Returns:
             TimeSeries containing %K and %D values
+            
+        Example:
+            >>> stoch = tech.stochastic_oscillator(k_window=14, d_window=3)
+            >>> # stoch.data contains %K and %D values
+            >>> # Values above 80 indicate overbought conditions
+            >>> # Values below 20 indicate oversold conditions
         """
         low_min = self.data['low'].rolling(window=k_window).min()
         high_max = self.data['high'].rolling(window=k_window).max()
@@ -140,11 +212,21 @@ class Technical:
         """
         Calculate Average Directional Index.
         
+        The ADX is a trend strength indicator that measures the strength of a trend,
+        regardless of its direction.
+        
         Args:
             window: Size of the moving window
             
         Returns:
-            TimeSeries containing ADX values
+            TimeSeries containing ADX, +DI, and -DI values
+            
+        Example:
+            >>> adx = tech.adx(window=14)
+            >>> # adx.data contains ADX, +DI, and -DI values
+            >>> # ADX > 25 indicates a strong trend
+            >>> # +DI > -DI indicates bullish trend
+            >>> # -DI > +DI indicates bearish trend
         """
         high = self.data['high']
         low = self.data['low']
@@ -182,8 +264,17 @@ class Technical:
         """
         Calculate On-Balance Volume.
         
+        The OBV is a momentum indicator that uses volume flow to predict changes in price.
+        It shows whether volume is flowing into or out of a security.
+        
         Returns:
             TimeSeries containing OBV values
+            
+        Example:
+            >>> obv = tech.obv()
+            >>> # obv.data contains the OBV values
+            >>> # Rising OBV indicates positive volume flow
+            >>> # Falling OBV indicates negative volume flow
         """
         close = self.data['close']
         volume = self.data['volume']

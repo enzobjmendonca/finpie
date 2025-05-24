@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional, List, Any, Union
 import pandas as pd
 from datetime import datetime
 import platform
@@ -7,8 +7,13 @@ import warnings
 from finpie.datasource.sources.base import DataSource
 from finpie.datasource.sources.yahoo import YahooFinanceSource
 from finpie.datasource.sources.alpha_vantage import AlphaVantageSource
-from finpie.datasource.sources.mt5 import MT5Source
-from finpie.data.timeseries import TimeSeries
+from finpie.datasource.sources.status_invest import StatusInvestSource
+from finpie.data import TimeSeries, MultiTimeSeries
+# Optional imports
+try:
+    from finpie.datasource.sources.mt5 import MT5Source
+except ImportError:
+    MT5Source = None
 
 class DataService:
     """
@@ -139,10 +144,7 @@ class DataService:
             service.register_source(AlphaVantageSource(alpha_vantage_key))
 
         # Register MT5 source if available and credentials are provided
-        try:
-            mt5_source = MT5Source()
-            service.register_source(mt5_source)
-        except Exception as e:
-            print(f"Warning: Failed to initialize MT5 source: {e}")
+        if MT5Source is not None:
+            service.register_source(MT5Source())
 
         return service 
