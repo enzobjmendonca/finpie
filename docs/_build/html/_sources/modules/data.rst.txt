@@ -1,39 +1,36 @@
 Data Module
-===========
+==========
 
-.. automodule:: finpie.data
-   :members:
-   :undoc-members:
-   :show-inheritance:
+This module provides classes for handling time series data.
 
 TimeSeries
----------
+----------
 
-.. automodule:: finpie.data.timeseries
+.. autoclass:: finpie.data.timeseries.TimeSeries
    :members:
    :undoc-members:
    :show-inheritance:
 
 MultiTimeSeries
--------------
+--------------
 
-.. automodule:: finpie.data.multitimeseries
+.. autoclass:: finpie.data.multitimeseries.MultiTimeSeries
    :members:
    :undoc-members:
    :show-inheritance:
 
 RatioTimeSeries
--------------
+--------------
 
-.. automodule:: finpie.data.ratiotimeseries
+.. autoclass:: finpie.data.ratiotimeseries.RatioTimeSeries
    :members:
    :undoc-members:
    :show-inheritance:
 
 SpreadTimeSeries
---------------
+---------------
 
-.. automodule:: finpie.data.spreadtimeseries
+.. autoclass:: finpie.data.spreadtimeseries.SpreadTimeSeries
    :members:
    :undoc-members:
    :show-inheritance: 

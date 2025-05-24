@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Analytics Module" href="analytics.html" />
-    <link rel="prev" title="Installation" href="../installation.html" /> 
+    <link rel="next" title="Data Source Module" href="datasource.html" />
+    <link rel="prev" title="Welcome to FinPie’s documentation!" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,16 +44,77 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Data Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#timeseries">TimeSeries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#multitimeseries">MultiTimeSeries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ratiotimeseries">RatioTimeSeries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#spreadtimeseries">SpreadTimeSeries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#timeseries">TimeSeries</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries"><code class="docutils literal notranslate"><span class="pre">TimeSeries</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.__init__"><code class="docutils literal notranslate"><span class="pre">TimeSeries.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.start_date"><code class="docutils literal notranslate"><span class="pre">TimeSeries.start_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.end_date"><code class="docutils literal notranslate"><span class="pre">TimeSeries.end_date</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.frequency"><code class="docutils literal notranslate"><span class="pre">TimeSeries.frequency</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.resample"><code class="docutils literal notranslate"><span class="pre">TimeSeries.resample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.returns"><code class="docutils literal notranslate"><span class="pre">TimeSeries.returns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.rolling"><code class="docutils literal notranslate"><span class="pre">TimeSeries.rolling()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.to_dict"><code class="docutils literal notranslate"><span class="pre">TimeSeries.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.from_dict"><code class="docutils literal notranslate"><span class="pre">TimeSeries.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.__repr__"><code class="docutils literal notranslate"><span class="pre">TimeSeries.__repr__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.cum_returns"><code class="docutils literal notranslate"><span class="pre">TimeSeries.cum_returns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.volatility"><code class="docutils literal notranslate"><span class="pre">TimeSeries.volatility()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.mean_return"><code class="docutils literal notranslate"><span class="pre">TimeSeries.mean_return()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.sharpe_ratio"><code class="docutils literal notranslate"><span class="pre">TimeSeries.sharpe_ratio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.max_drawdown"><code class="docutils literal notranslate"><span class="pre">TimeSeries.max_drawdown()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.value_at_risk"><code class="docutils literal notranslate"><span class="pre">TimeSeries.value_at_risk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.skewness"><code class="docutils literal notranslate"><span class="pre">TimeSeries.skewness()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.kurtosis"><code class="docutils literal notranslate"><span class="pre">TimeSeries.kurtosis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries.autocorrelation"><code class="docutils literal notranslate"><span class="pre">TimeSeries.autocorrelation()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multitimeseries">MultiTimeSeries</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.__init__"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries._align_series"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries._align_series()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries._create_metadata"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries._create_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.correlation"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.correlation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.rolling"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.rolling()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.covariance"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.covariance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.returns"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.returns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.portfolio"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.portfolio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.rolling_correlation"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.rolling_correlation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.to_dict"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.from_dict"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries.__repr__"><code class="docutils literal notranslate"><span class="pre">MultiTimeSeries.__repr__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ratiotimeseries">RatioTimeSeries</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#finpie.data.ratiotimeseries.RatioTimeSeries"><code class="docutils literal notranslate"><span class="pre">RatioTimeSeries</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.ratiotimeseries.RatioTimeSeries.__init__"><code class="docutils literal notranslate"><span class="pre">RatioTimeSeries.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.ratiotimeseries.RatioTimeSeries.to_dict"><code class="docutils literal notranslate"><span class="pre">RatioTimeSeries.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.ratiotimeseries.RatioTimeSeries.from_dict"><code class="docutils literal notranslate"><span class="pre">RatioTimeSeries.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.ratiotimeseries.RatioTimeSeries.__repr__"><code class="docutils literal notranslate"><span class="pre">RatioTimeSeries.__repr__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#spreadtimeseries">SpreadTimeSeries</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.__init__"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries._calculate_hedge_ratio"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries._calculate_hedge_ratio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.get_hedge_ratio"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries.get_hedge_ratio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.to_dict"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.from_dict"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.__repr__"><code class="docutils literal notranslate"><span class="pre">SpreadTimeSeries.__repr__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="datasource.html">Data Source Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 </ul>
 
         </div>
@@ -82,17 +143,720 @@
              
   <section id="data-module">
 <h1>Data Module<a class="headerlink" href="#data-module" title="Link to this heading"></a></h1>
+<p>This module provides classes for handling time series data.</p>
 <section id="timeseries">
 <h2>TimeSeries<a class="headerlink" href="#timeseries" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finpie.data.timeseries.</span></span><span class="sig-name descname"><span class="pre">TimeSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for time series data.</p>
+<p>This class provides core functionality for handling time series data,
+including basic operations like resampling, returns calculation,
+and statistical measures.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize a TimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – DataFrame with datetime index and price columns</p></li>
+<li><p><strong>metadata</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeriesMetadata</span></code></span>) – TimeSeriesMetadata object containing series information</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.start_date">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span></em><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.start_date" title="Link to this definition"></a></dt>
+<dd><p>Get the start date of the time series.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.end_date">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span></em><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.end_date" title="Link to this definition"></a></dt>
+<dd><p>Get the end date of the time series.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.frequency">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frequency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.frequency" title="Link to this definition"></a></dt>
+<dd><p>Get the frequency of the time series.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.resample" title="Link to this definition"></a></dt>
+<dd><p>Resample the time series to a different frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>freq</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Target frequency (e.g., ‘1D’ for daily, ‘1H’ for hourly)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New TimeSeries object with resampled data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.returns">
+<span class="sig-name descname"><span class="pre">returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.returns" title="Link to this definition"></a></dt>
+<dd><p>Calculate returns for the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>intraday_only</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to drop the first record of each day</p></li>
+<li><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Return calculation method (‘log’ or ‘simple’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TimeSeries object with returns data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.rolling">
+<span class="sig-name descname"><span class="pre">rolling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mean',</span> <span class="pre">'std',</span> <span class="pre">'min',</span> <span class="pre">'max']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.rolling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.rolling" title="Link to this definition"></a></dt>
+<dd><p>Calculate rolling statistics for the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Size of the rolling window</p></li>
+<li><p><strong>stats</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of statistics to calculate available stats: [‘mean’, ‘std’, ‘min’, ‘max’, ‘skew’, ‘kurt’, ‘sum’, ‘count’, ‘median’, ‘var’, ‘quantiles’]</p></li>
+<li><p><strong>min_periods</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Minimum number of observations required</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New TimeSeries object with rolling statistics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert the time series to a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the time series data and metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Create a TimeSeries object from a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dict</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span>) – Dictionary containing time series data and metadata</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New TimeSeries object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.__repr__" title="Link to this definition"></a></dt>
+<dd><p>String representation of the TimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.cum_returns">
+<span class="sig-name descname"><span class="pre">cum_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.cum_returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.cum_returns" title="Link to this definition"></a></dt>
+<dd><p>Calculate the cumulative returns of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.volatility">
+<span class="sig-name descname"><span class="pre">volatility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.volatility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.volatility" title="Link to this definition"></a></dt>
+<dd><p>Calculate the volatility of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.mean_return">
+<span class="sig-name descname"><span class="pre">mean_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.mean_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.mean_return" title="Link to this definition"></a></dt>
+<dd><p>Calculate the mean return of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.sharpe_ratio">
+<span class="sig-name descname"><span class="pre">sharpe_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.sharpe_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.sharpe_ratio" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Sharpe ratio of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.max_drawdown">
+<span class="sig-name descname"><span class="pre">max_drawdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.max_drawdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.max_drawdown" title="Link to this definition"></a></dt>
+<dd><p>Calculate the maximum drawdown of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.value_at_risk">
+<span class="sig-name descname"><span class="pre">value_at_risk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.value_at_risk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.value_at_risk" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Value at Risk (VaR) of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.skewness">
+<span class="sig-name descname"><span class="pre">skewness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.skewness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.skewness" title="Link to this definition"></a></dt>
+<dd><p>Calculate the skewness of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.kurtosis">
+<span class="sig-name descname"><span class="pre">kurtosis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.kurtosis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.kurtosis" title="Link to this definition"></a></dt>
+<dd><p>Calculate the kurtosis of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.timeseries.TimeSeries.autocorrelation">
+<span class="sig-name descname"><span class="pre">autocorrelation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/timeseries.html#TimeSeries.autocorrelation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.timeseries.TimeSeries.autocorrelation" title="Link to this definition"></a></dt>
+<dd><p>Calculate the autocorrelation of the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="multitimeseries">
 <h2>MultiTimeSeries<a class="headerlink" href="#multitimeseries" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finpie.data.multitimeseries.</span></span><span class="sig-name descname"><span class="pre">MultiTimeSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a></p>
+<p>A class for handling multiple time series together.</p>
+<p>This class extends TimeSeries to provide functionality for analyzing multiple time series
+simultaneously. It supports operations like correlation analysis, portfolio construction,
+and risk metrics across multiple assets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – Combined DataFrame containing all time series data</p></li>
+<li><p><strong>timeseries</strong> (<em>List</em><em>[</em><a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a><em>]</em>) – List of individual TimeSeries objects</p></li>
+<li><p><strong>metadata</strong> (<em>TimeSeriesMetadata</em>) – Metadata for the combined time series</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize a MultiTimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeseries</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>]</span>) – Can be one of:
+- List of TimeSeries objects
+- List of pandas DataFrames
+- List of pandas Series
+- Single DataFrame with multiple columns</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If input is invalid or empty</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries._align_series">
+<span class="sig-name descname"><span class="pre">_align_series</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries._align_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries._align_series" title="Link to this definition"></a></dt>
+<dd><p>Align all time series to a common index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries._create_metadata">
+<span class="sig-name descname"><span class="pre">_create_metadata</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries._create_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries._create_metadata" title="Link to this definition"></a></dt>
+<dd><p>Create metadata for the combined time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeriesMetadata</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.correlation">
+<span class="sig-name descname"><span class="pre">correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.correlation" title="Link to this definition"></a></dt>
+<dd><p>Calculate correlation matrix between time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>bool</em>) – Whether to use returns or original series. Defaults to True.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Correlation method (‘pearson’, ‘kendall’, or ‘spearman’). Defaults to ‘pearson’.</p></li>
+<li><p><strong>min_periods</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Minimum number of observations required. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Correlation matrix between all time series.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If returns=True and the series is already returns, a warning will be logged.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.rolling">
+<span class="sig-name descname"><span class="pre">rolling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mean',</span> <span class="pre">'std',</span> <span class="pre">'min',</span> <span class="pre">'max',</span> <span class="pre">'skew',</span> <span class="pre">'kurt',</span> <span class="pre">'sum',</span> <span class="pre">'count',</span> <span class="pre">'median',</span> <span class="pre">'var',</span> <span class="pre">'quantiles']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.rolling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.rolling" title="Link to this definition"></a></dt>
+<dd><p>Calculate rolling statistics for the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Size of the rolling window</p></li>
+<li><p><strong>stats</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of statistics to calculate available stats: [‘mean’, ‘std’, ‘min’, ‘max’, ‘skew’, ‘kurt’, ‘sum’, ‘count’, ‘median’, ‘var’, ‘quantiles’]</p></li>
+<li><p><strong>min_periods</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Minimum number of observations required</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame containing rolling statistics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.covariance">
+<span class="sig-name descname"><span class="pre">covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.covariance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.covariance" title="Link to this definition"></a></dt>
+<dd><p>Calculate covariance matrix between time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>bool</em>) – Whether to use returns or original series. Defaults to True.</p></li>
+<li><p><strong>min_periods</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Minimum number of observations required. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Covariance matrix between all time series.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If returns=True and the series is already returns, a warning will be logged.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.returns">
+<span class="sig-name descname"><span class="pre">returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.returns" title="Link to this definition"></a></dt>
+<dd><p>Calculate returns for all time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Return calculation method (‘log’ or ‘simple’)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries" title="finpie.data.multitimeseries.MultiTimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiTimeSeries</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New MultiTimeSeries object with returns data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.portfolio">
+<span class="sig-name descname"><span class="pre">portfolio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intraday_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'simple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shares</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.portfolio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.portfolio" title="Link to this definition"></a></dt>
+<dd><p>Calculate portfolio returns using given weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – Dictionary mapping symbols to weights</p></li>
+<li><p><strong>percentage</strong> (<em>bool</em>) – Whether to use percentage returns. Defaults to False.</p></li>
+<li><p><strong>intraday_only</strong> (<em>bool</em>) – Whether to use intraday only returns. Defaults to False.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Return calculation method (‘log’ or ‘simple’). Defaults to ‘simple’.</p></li>
+<li><p><strong>shares</strong> (<em>bool</em>) – Whether to use weights as number of shares instead of percentage. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Portfolio returns time series.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If weights don’t sum to 1.0 (when shares=False) or if symbols are not found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.rolling_correlation">
+<span class="sig-name descname"><span class="pre">rolling_correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_periods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.rolling_correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.rolling_correlation" title="Link to this definition"></a></dt>
+<dd><p>Calculate rolling correlation matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Size of the rolling window</p></li>
+<li><p><strong>min_periods</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Minimum number of observations required</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping dates to correlation matrices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert the MultiTimeSeries to a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the time series data and metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Create a MultiTimeSeries object from a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dict</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span>) – Dictionary containing time series data and metadata</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#finpie.data.multitimeseries.MultiTimeSeries" title="finpie.data.multitimeseries.MultiTimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiTimeSeries</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New MultiTimeSeries object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.multitimeseries.MultiTimeSeries.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/multitimeseries.html#MultiTimeSeries.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.multitimeseries.MultiTimeSeries.__repr__" title="Link to this definition"></a></dt>
+<dd><p>String representation of the MultiTimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="ratiotimeseries">
 <h2>RatioTimeSeries<a class="headerlink" href="#ratiotimeseries" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="finpie.data.ratiotimeseries.RatioTimeSeries">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finpie.data.ratiotimeseries.</span></span><span class="sig-name descname"><span class="pre">RatioTimeSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numerator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">denominator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/ratiotimeseries.html#RatioTimeSeries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.ratiotimeseries.RatioTimeSeries" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a></p>
+<p>A class for handling ratio-based time series.</p>
+<p>This class extends TimeSeries to provide functionality for analyzing the ratio between two time series.
+It’s commonly used in pair trading and relative value strategies, where the relationship between
+two assets is analyzed through their price ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>numerator</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – The numerator time series</p></li>
+<li><p><strong>denominator</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – The denominator time series</p></li>
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – The ratio time series data</p></li>
+<li><p><strong>metadata</strong> (<em>TimeSeriesMetadata</em>) – Metadata for the ratio time series</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.ratiotimeseries.RatioTimeSeries.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numerator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">denominator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/ratiotimeseries.html#RatioTimeSeries.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.ratiotimeseries.RatioTimeSeries.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize a RatioTimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>numerator</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – TimeSeries object for the numerator. Can also be a DataFrame or Series.</p></li>
+<li><p><strong>denominator</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – TimeSeries object for the denominator. Can also be a DataFrame or Series.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If numerator or denominator are not TimeSeries objects, they will be converted automatically.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.ratiotimeseries.RatioTimeSeries.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/ratiotimeseries.html#RatioTimeSeries.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.ratiotimeseries.RatioTimeSeries.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert the RatioTimeSeries to a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing:</dt><dd><ul class="simple">
+<li><p>data: The ratio time series data</p></li>
+<li><p>metadata: Metadata for the ratio time series</p></li>
+<li><p>numerator: Dictionary representation of the numerator time series</p></li>
+<li><p>denominator: Dictionary representation of the denominator time series</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.ratiotimeseries.RatioTimeSeries.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/ratiotimeseries.html#RatioTimeSeries.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.ratiotimeseries.RatioTimeSeries.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Create a RatioTimeSeries object from a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Dictionary containing:
+- numerator: Dictionary representation of the numerator time series
+- denominator: Dictionary representation of the denominator time series</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New RatioTimeSeries object reconstructed from the dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#finpie.data.ratiotimeseries.RatioTimeSeries" title="finpie.data.ratiotimeseries.RatioTimeSeries">RatioTimeSeries</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.ratiotimeseries.RatioTimeSeries.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/ratiotimeseries.html#RatioTimeSeries.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.ratiotimeseries.RatioTimeSeries.__repr__" title="Link to this definition"></a></dt>
+<dd><p>String representation of the RatioTimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="spreadtimeseries">
 <h2>SpreadTimeSeries<a class="headerlink" href="#spreadtimeseries" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finpie.data.spreadtimeseries.</span></span><span class="sig-name descname"><span class="pre">SpreadTimeSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hedge_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeries</span></code></a></p>
+<p>A class for handling spread-based time series.</p>
+<p>This class extends TimeSeries to provide functionality for analyzing the spread between two time series.
+It’s commonly used in spread trading and statistical arbitrage strategies, where the relationship
+between two assets is analyzed through their price spread, often with a hedge ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>series1</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – The first time series</p></li>
+<li><p><strong>series2</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – The second time series</p></li>
+<li><p><strong>hedge_ratio</strong> (<em>float</em>) – The hedge ratio used to calculate the spread</p></li>
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – The spread time series data</p></li>
+<li><p><strong>metadata</strong> (<em>TimeSeriesMetadata</em>) – Metadata for the spread time series</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hedge_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize a SpreadTimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>series1</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – First TimeSeries object. Can also be a DataFrame or Series.</p></li>
+<li><p><strong>series2</strong> (<a class="reference internal" href="#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries"><em>TimeSeries</em></a>) – Second TimeSeries object. Can also be a DataFrame or Series.</p></li>
+<li><p><strong>hedge_ratio</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Optional hedge ratio for series2. If None, will be calculated
+using OLS regression. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If series1 or series2 are not TimeSeries objects, they will be converted automatically.
+The hedge ratio is calculated using OLS regression if not provided.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries._calculate_hedge_ratio">
+<span class="sig-name descname"><span class="pre">_calculate_hedge_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries._calculate_hedge_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries._calculate_hedge_ratio" title="Link to this definition"></a></dt>
+<dd><p>Calculate the hedge ratio using OLS regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>pd.Series</em>) – First time series</p></li>
+<li><p><strong>y</strong> (<em>pd.Series</em>) – Second time series</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Calculated hedge ratio using OLS regression</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Both series must have the same index. The hedge ratio is calculated as the coefficient
+of the second series in the OLS regression of y on x.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries.get_hedge_ratio">
+<span class="sig-name descname"><span class="pre">get_hedge_ratio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries.get_hedge_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.get_hedge_ratio" title="Link to this definition"></a></dt>
+<dd><p>Get the current hedge ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The hedge ratio used to calculate the spread</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert the SpreadTimeSeries to a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing:</dt><dd><ul class="simple">
+<li><p>data: The spread time series data</p></li>
+<li><p>metadata: Metadata for the spread time series</p></li>
+<li><p>series1: Dictionary representation of the first time series</p></li>
+<li><p>series2: Dictionary representation of the second time series</p></li>
+<li><p>hedge_ratio: The hedge ratio used to calculate the spread</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Create a SpreadTimeSeries object from a dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Dictionary containing:
+- series1: Dictionary representation of the first time series
+- series2: Dictionary representation of the second time series
+- hedge_ratio: The hedge ratio used to calculate the spread</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New SpreadTimeSeries object reconstructed from the dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#finpie.data.spreadtimeseries.SpreadTimeSeries" title="finpie.data.spreadtimeseries.SpreadTimeSeries">SpreadTimeSeries</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.data.spreadtimeseries.SpreadTimeSeries.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/data/spreadtimeseries.html#SpreadTimeSeries.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.data.spreadtimeseries.SpreadTimeSeries.__repr__" title="Link to this definition"></a></dt>
+<dd><p>String representation of the SpreadTimeSeries object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -100,8 +864,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="analytics.html" class="btn btn-neutral float-right" title="Analytics Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to FinPie’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="datasource.html" class="btn btn-neutral float-right" title="Data Source Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

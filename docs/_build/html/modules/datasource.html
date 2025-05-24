@@ -19,7 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Analytics Module" href="analytics.html" /> 
+    <link rel="next" title="Analytics Module" href="analytics.html" />
+    <link rel="prev" title="Data Module" href="data.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,15 +44,19 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Data Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Data Source Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#data-service">Data Service</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-sources">Data Sources</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#mt5-source">MT5 Source</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#yahoo-finance-source">Yahoo Finance Source</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#alpha-vantage-source">Alpha Vantage Source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yahoo-finance-source">Yahoo Finance Source</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.datasource.sources.yahoo.YahooFinanceSource"><code class="docutils literal notranslate"><span class="pre">YahooFinanceSource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#alpha-vantage-source">Alpha Vantage Source</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource"><code class="docutils literal notranslate"><span class="pre">AlphaVantageSource</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#status-invest-source">Status Invest Source</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#finpie.datasource.sources.status_invest.StatusInvestSource"><code class="docutils literal notranslate"><span class="pre">StatusInvestSource</span></code></a></li>
 </ul>
@@ -60,6 +65,8 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 </ul>
 
         </div>
@@ -88,20 +95,259 @@
              
   <section id="data-source-module">
 <h1>Data Source Module<a class="headerlink" href="#data-source-module" title="Link to this heading"></a></h1>
-<p id="module-finpie.datasource">Data source modules for fetching financial data</p>
+<p>This module provides data sources for retrieving financial data.</p>
 <section id="data-service">
 <h2>Data Service<a class="headerlink" href="#data-service" title="Link to this heading"></a></h2>
 </section>
 <section id="data-sources">
 <h2>Data Sources<a class="headerlink" href="#data-sources" title="Link to this heading"></a></h2>
+<p>This section describes the available data sources.</p>
 <section id="mt5-source">
 <h3>MT5 Source<a class="headerlink" href="#mt5-source" title="Link to this heading"></a></h3>
 </section>
 <section id="yahoo-finance-source">
 <h3>Yahoo Finance Source<a class="headerlink" href="#yahoo-finance-source" title="Link to this heading"></a></h3>
+<dl class="py class" id="module-finpie.datasource.sources.yahoo">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finpie.datasource.sources.yahoo.</span></span><span class="sig-name descname"><span class="pre">YahooFinanceSource</span></span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DataSource</span></code></p>
+<p>Yahoo Finance data source implementation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the Yahoo Finance data source.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource._get_ticker">
+<span class="sig-name descname"><span class="pre">_get_ticker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource._get_ticker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource._get_ticker" title="Link to this definition"></a></dt>
+<dd><p>Get or create a Ticker object for the given symbol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<em>str</em>) – The symbol to get a Ticker for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Ticker object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>yf.Ticker</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource.get_prices">
+<span class="sig-name descname"><span class="pre">get_prices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['close']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource.get_prices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource.get_prices" title="Link to this definition"></a></dt>
+<dd><p>Get OHLC price data from Yahoo Finance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The symbol to fetch data for</p></li>
+<li><p><strong>start_date</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Start date in ‘YYYY-MM-DD’ format</p></li>
+<li><p><strong>end_date</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – End date in ‘YYYY-MM-DD’ format</p></li>
+<li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Data interval (e.g., ‘1d’ for daily, ‘1h’ for hourly)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The historical data with metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="data.html#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries">TimeSeries</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource.get_metadata" title="Link to this definition"></a></dt>
+<dd><p>Get metadata for a symbol from Yahoo Finance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The symbol to fetch metadata for</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing symbol metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource.get_available_symbols">
+<span class="sig-name descname"><span class="pre">get_available_symbols</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource.get_available_symbols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource.get_available_symbols" title="Link to this definition"></a></dt>
+<dd><p>Get list of available symbols from Yahoo Finance.
+Note: This is a limited implementation as Yahoo Finance doesn’t provide
+a direct way to get all available symbols.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of available symbols</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.yahoo.YahooFinanceSource.get_symbol_info">
+<span class="sig-name descname"><span class="pre">get_symbol_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/yahoo.html#YahooFinanceSource.get_symbol_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.yahoo.YahooFinanceSource.get_symbol_info" title="Link to this definition"></a></dt>
+<dd><p>Get information about a specific symbol from Yahoo Finance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<em>str</em>) – The symbol to get information for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Information about the symbol</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="alpha-vantage-source">
 <h3>Alpha Vantage Source<a class="headerlink" href="#alpha-vantage-source" title="Link to this heading"></a></h3>
+<dl class="py class" id="module-finpie.datasource.sources.alpha_vantage">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finpie.datasource.sources.alpha_vantage.</span></span><span class="sig-name descname"><span class="pre">AlphaVantageSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DataSource</span></code></p>
+<p>Alpha Vantage data source implementation.
+Provides access to real-time and historical stock data, forex, and cryptocurrencies.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource.BASE_URL">
+<span class="sig-name descname"><span class="pre">BASE_URL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.alphavantage.co/query'</span></em><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource.BASE_URL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the Alpha Vantage data source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>api_key</strong> (<em>str</em>) – Alpha Vantage API key</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource._make_request">
+<span class="sig-name descname"><span class="pre">_make_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource._make_request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource._make_request" title="Link to this definition"></a></dt>
+<dd><p>Make a request to the Alpha Vantage API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>function</strong> (<em>str</em>) – API function to call</p></li>
+<li><p><strong>params</strong> (<em>Dict</em>) – Additional parameters for the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>API response</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the API request fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource._convert_frequency">
+<span class="sig-name descname"><span class="pre">_convert_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource._convert_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource._convert_frequency" title="Link to this definition"></a></dt>
+<dd><p>Convert frequency string to Alpha Vantage interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frequency</strong> (<em>str</em>) – Frequency string (e.g., ‘1d’, ‘1h’, ‘1m’)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Alpha Vantage interval</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_available_symbols">
+<span class="sig-name descname"><span class="pre">get_available_symbols</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource.get_available_symbols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_available_symbols" title="Link to this definition"></a></dt>
+<dd><p>Get list of available symbols from Alpha Vantage.
+Note: Alpha Vantage doesn’t provide a direct way to get all symbols,
+so this is a limited implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of available symbols</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_symbol_info">
+<span class="sig-name descname"><span class="pre">get_symbol_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource.get_symbol_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_symbol_info" title="Link to this definition"></a></dt>
+<dd><p>Get information about a specific symbol from Alpha Vantage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<em>str</em>) – The symbol to get information for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Information about the symbol</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_prices">
+<span class="sig-name descname"><span class="pre">get_prices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['close']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource.get_prices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_prices" title="Link to this definition"></a></dt>
+<dd><p>Get OHLC price data from Alpha Vantage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The symbol to fetch data for</p></li>
+<li><p><strong>start_date</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Start date in ‘YYYY-MM-DD’ format</p></li>
+<li><p><strong>end_date</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – End date in ‘YYYY-MM-DD’ format</p></li>
+<li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Data interval (e.g., ‘1d’ for daily, ‘1h’ for hourly)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The historical data with metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="data.html#finpie.data.timeseries.TimeSeries" title="finpie.data.timeseries.TimeSeries">TimeSeries</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finpie/datasource/sources/alpha_vantage.html#AlphaVantageSource.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finpie.datasource.sources.alpha_vantage.AlphaVantageSource.get_metadata" title="Link to this definition"></a></dt>
+<dd><p>Get metadata for a symbol from Alpha Vantage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>symbol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The symbol to fetch metadata for</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing symbol metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="status-invest-source">
 <h3>Status Invest Source<a class="headerlink" href="#status-invest-source" title="Link to this heading"></a></h3>
@@ -216,7 +462,8 @@ Includes rate limiting and error handling.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="analytics.html" class="btn btn-neutral float-left" title="Analytics Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data.html" class="btn btn-neutral float-left" title="Data Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="analytics.html" class="btn btn-neutral float-right" title="Analytics Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

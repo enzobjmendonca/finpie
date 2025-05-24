@@ -1,13 +1,10 @@
 Data Source Module
-================
+=================
 
-.. automodule:: finpie.datasource
-   :members:
-   :undoc-members:
-   :show-inheritance:
+This module provides data sources for retrieving financial data.
 
 Data Service
-----------
+-----------
 
 .. automodule:: finpie.datasource.service
    :members:
@@ -15,10 +12,12 @@ Data Service
    :show-inheritance:
 
 Data Sources
-----------
+-----------
+
+This section describes the available data sources.
 
 MT5 Source
-~~~~~~~~
+~~~~~~~~~
 
 .. automodule:: finpie.datasource.sources.mt5
    :members:
@@ -26,7 +25,7 @@ MT5 Source
    :show-inheritance:
 
 Yahoo Finance Source
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. automodule:: finpie.datasource.sources.yahoo
    :members:
@@ -34,7 +33,7 @@ Yahoo Finance Source
    :show-inheritance:
 
 Alpha Vantage Source
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. automodule:: finpie.datasource.sources.alpha_vantage
    :members:
@@ -42,7 +41,7 @@ Alpha Vantage Source
    :show-inheritance:
 
 Status Invest Source
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. automodule:: finpie.datasource.sources.status_invest
    :members:
