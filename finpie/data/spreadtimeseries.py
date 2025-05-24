@@ -5,21 +5,32 @@ import numpy as np
 from finpie.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 class SpreadTimeSeries(TimeSeries):
-    """
-    Class for handling spread-based time series.
+    """A class for handling spread-based time series.
     
-    This class provides functionality for analyzing the spread between two time series,
-    commonly used in spread trading and statistical arbitrage strategies.
+    This class extends TimeSeries to provide functionality for analyzing the spread between two time series.
+    It's commonly used in spread trading and statistical arbitrage strategies, where the relationship
+    between two assets is analyzed through their price spread, often with a hedge ratio.
+    
+    Attributes:
+        series1 (TimeSeries): The first time series
+        series2 (TimeSeries): The second time series
+        hedge_ratio (float): The hedge ratio used to calculate the spread
+        data (pd.DataFrame): The spread time series data
+        metadata (TimeSeriesMetadata): Metadata for the spread time series
     """
     
     def __init__(self, series1: TimeSeries, series2: TimeSeries, hedge_ratio: Optional[float] = None):
-        """
-        Initialize a SpreadTimeSeries object.
+        """Initialize a SpreadTimeSeries object.
         
         Args:
-            series1: First TimeSeries object
-            series2: Second TimeSeries object
-            hedge_ratio: Optional hedge ratio for series2. If None, will be calculated using OLS regression
+            series1 (TimeSeries): First TimeSeries object. Can also be a DataFrame or Series.
+            series2 (TimeSeries): Second TimeSeries object. Can also be a DataFrame or Series.
+            hedge_ratio (Optional[float]): Optional hedge ratio for series2. If None, will be calculated
+                using OLS regression. Defaults to None.
+                
+        Note:
+            If series1 or series2 are not TimeSeries objects, they will be converted automatically.
+            The hedge ratio is calculated using OLS regression if not provided.
         """
         # Validate inputs
         if not isinstance(series1, TimeSeries):
@@ -61,15 +72,18 @@ class SpreadTimeSeries(TimeSeries):
         self.series2 = series2
     
     def _calculate_hedge_ratio(self, x: pd.Series, y: pd.Series) -> float:
-        """
-        Calculate the hedge ratio using OLS regression. Both series must have the same index.
+        """Calculate the hedge ratio using OLS regression.
         
         Args:
-            series1: First pd.Series object
-            series2: Second pd.Series object
+            x (pd.Series): First time series
+            y (pd.Series): Second time series
             
         Returns:
-            Calculated hedge ratio
+            float: Calculated hedge ratio using OLS regression
+            
+        Note:
+            Both series must have the same index. The hedge ratio is calculated as the coefficient
+            of the second series in the OLS regression of y on x.
         """        
         # Add constant for regression
         X = pd.concat([pd.Series(1, index=x.index), x], axis=1)
@@ -79,18 +93,24 @@ class SpreadTimeSeries(TimeSeries):
         return beta[1]  # Return the coefficient for series2
     
     def get_hedge_ratio(self) -> float:
-        """
-        Get the hedge ratio.
+        """Get the current hedge ratio.
+        
+        Returns:
+            float: The hedge ratio used to calculate the spread
         """
         return self.hedge_ratio
     
     
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert the SpreadTimeSeries to a dictionary representation.
+        """Convert the SpreadTimeSeries to a dictionary representation.
         
         Returns:
-            Dictionary containing the time series data and metadata
+            Dict[str, Any]: Dictionary containing:
+                - data: The spread time series data
+                - metadata: Metadata for the spread time series
+                - series1: Dictionary representation of the first time series
+                - series2: Dictionary representation of the second time series
+                - hedge_ratio: The hedge ratio used to calculate the spread
         """
         return {
             'data': self.data.to_dict(),
@@ -111,14 +131,16 @@ class SpreadTimeSeries(TimeSeries):
     
     @classmethod
     def from_dict(cls, data_dict: Dict[str, Any]) -> 'SpreadTimeSeries':
-        """
-        Create a SpreadTimeSeries object from a dictionary representation.
+        """Create a SpreadTimeSeries object from a dictionary representation.
         
         Args:
-            data_dict: Dictionary containing time series data and metadata
-            
+            data_dict (Dict[str, Any]): Dictionary containing:
+                - series1: Dictionary representation of the first time series
+                - series2: Dictionary representation of the second time series
+                - hedge_ratio: The hedge ratio used to calculate the spread
+                
         Returns:
-            New SpreadTimeSeries object
+            SpreadTimeSeries: New SpreadTimeSeries object reconstructed from the dictionary
         """
         series1 = TimeSeries.from_dict(data_dict['series1'])
         series2 = TimeSeries.from_dict(data_dict['series2'])

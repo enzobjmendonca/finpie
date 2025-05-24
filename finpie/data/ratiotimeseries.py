@@ -5,20 +5,28 @@ import numpy as np
 from finpie.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 class RatioTimeSeries(TimeSeries):
-    """
-    Class for handling ratio-based time series.
+    """A class for handling ratio-based time series.
     
-    This class provides functionality for analyzing the ratio between two time series,
-    commonly used in pair trading and relative value strategies.
+    This class extends TimeSeries to provide functionality for analyzing the ratio between two time series.
+    It's commonly used in pair trading and relative value strategies, where the relationship between
+    two assets is analyzed through their price ratio.
+    
+    Attributes:
+        numerator (TimeSeries): The numerator time series
+        denominator (TimeSeries): The denominator time series
+        data (pd.DataFrame): The ratio time series data
+        metadata (TimeSeriesMetadata): Metadata for the ratio time series
     """
     
     def __init__(self, numerator: TimeSeries, denominator: TimeSeries):
-        """
-        Initialize a RatioTimeSeries object.
+        """Initialize a RatioTimeSeries object.
         
         Args:
-            numerator: TimeSeries object for the numerator
-            denominator: TimeSeries object for the denominator
+            numerator (TimeSeries): TimeSeries object for the numerator. Can also be a DataFrame or Series.
+            denominator (TimeSeries): TimeSeries object for the denominator. Can also be a DataFrame or Series.
+            
+        Note:
+            If numerator or denominator are not TimeSeries objects, they will be converted automatically.
         """
         # Validate inputs
         if not isinstance(numerator, TimeSeries):
@@ -52,11 +60,14 @@ class RatioTimeSeries(TimeSeries):
         self.denominator = denominator
     
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert the RatioTimeSeries to a dictionary representation.
+        """Convert the RatioTimeSeries to a dictionary representation.
         
         Returns:
-            Dictionary containing the time series data and metadata
+            Dict[str, Any]: Dictionary containing:
+                - data: The ratio time series data
+                - metadata: Metadata for the ratio time series
+                - numerator: Dictionary representation of the numerator time series
+                - denominator: Dictionary representation of the denominator time series
         """
         return {
             'data': self.data.to_dict(),
@@ -75,14 +86,15 @@ class RatioTimeSeries(TimeSeries):
     
     @classmethod
     def from_dict(cls, data_dict: Dict[str, Any]) -> 'RatioTimeSeries':
-        """
-        Create a RatioTimeSeries object from a dictionary representation.
+        """Create a RatioTimeSeries object from a dictionary representation.
         
         Args:
-            data_dict: Dictionary containing time series data and metadata
-            
+            data_dict (Dict[str, Any]): Dictionary containing:
+                - numerator: Dictionary representation of the numerator time series
+                - denominator: Dictionary representation of the denominator time series
+                
         Returns:
-            New RatioTimeSeries object
+            RatioTimeSeries: New RatioTimeSeries object reconstructed from the dictionary
         """
         numerator = TimeSeries.from_dict(data_dict['numerator'])
         denominator = TimeSeries.from_dict(data_dict['denominator'])

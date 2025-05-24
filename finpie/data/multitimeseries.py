@@ -5,20 +5,30 @@ import numpy as np
 from finpie.data.timeseries import TimeSeries, TimeSeriesMetadata
 
 class MultiTimeSeries(TimeSeries):
-    """
-    Class for handling multiple time series together.
+    """A class for handling multiple time series together.
     
-    This class provides functionality for analyzing multiple time series
-    simultaneously, including correlation analysis, portfolio construction,
-    and risk metrics.
+    This class extends TimeSeries to provide functionality for analyzing multiple time series
+    simultaneously. It supports operations like correlation analysis, portfolio construction,
+    and risk metrics across multiple assets.
+    
+    Attributes:
+        data (pd.DataFrame): Combined DataFrame containing all time series data
+        timeseries (List[TimeSeries]): List of individual TimeSeries objects
+        metadata (TimeSeriesMetadata): Metadata for the combined time series
     """
     
     def __init__(self, timeseries: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame]):
-        """
-        Initialize a MultiTimeSeries object.
+        """Initialize a MultiTimeSeries object.
         
         Args:
-            timeseries: List of TimeSeries objects to combine
+            timeseries: Can be one of:
+                - List of TimeSeries objects
+                - List of pandas DataFrames
+                - List of pandas Series
+                - Single DataFrame with multiple columns
+                
+        Raises:
+            ValueError: If input is invalid or empty
         """
         # Handle different input types
         if isinstance(timeseries, pd.DataFrame):
@@ -74,16 +84,18 @@ class MultiTimeSeries(TimeSeries):
         )
     
     def correlation(self, returns: bool = True, method: str = 'pearson', min_periods: Optional[int] = None) -> pd.DataFrame:
-        """
-        Calculate correlation matrix between time series.
+        """Calculate correlation matrix between time series.
         
         Args:
-            returns: Whether to use returns or original series
-            method: Correlation method ('pearson', 'kendall', or 'spearman')
-            min_periods: Minimum number of observations required
+            returns (bool): Whether to use returns or original series. Defaults to True.
+            method (str): Correlation method ('pearson', 'kendall', or 'spearman'). Defaults to 'pearson'.
+            min_periods (Optional[int]): Minimum number of observations required. Defaults to None.
             
         Returns:
-            DataFrame containing correlation matrix
+            pd.DataFrame: Correlation matrix between all time series.
+            
+        Note:
+            If returns=True and the series is already returns, a warning will be logged.
         """
         if returns:
             if self.metadata.is_returns:
@@ -119,15 +131,17 @@ class MultiTimeSeries(TimeSeries):
         return aligned_df
 
     def covariance(self, returns: bool = True, min_periods: Optional[int] = None) -> pd.DataFrame:
-        """
-        Calculate covariance matrix between time series.
+        """Calculate covariance matrix between time series.
         
         Args:
-            returns: Whether to use returns or original series
-            min_periods: Minimum number of observations required
+            returns (bool): Whether to use returns or original series. Defaults to True.
+            min_periods (Optional[int]): Minimum number of observations required. Defaults to None.
             
         Returns:
-            DataFrame containing covariance matrix
+            pd.DataFrame: Covariance matrix between all time series.
+            
+        Note:
+            If returns=True and the series is already returns, a warning will be logged.
         """
         if returns:
             if self.metadata.is_returns:
@@ -157,17 +171,20 @@ class MultiTimeSeries(TimeSeries):
     
     def portfolio(self, weights: Dict[str, float], percentage: bool = False, 
                  intraday_only: bool = False, method: str = 'simple', shares: bool = False) -> pd.DataFrame:
-        """
-        Calculate portfolio returns using given weights.
+        """Calculate portfolio returns using given weights.
         
         Args:
-            weights: Dictionary mapping symbols to weights
-            percentage: Whether to use percentage returns
-            intraday_only: Whether to use intraday only returns
-            method: Return calculation method ('log' or 'simple')
-            shares: Whether to weights as number of shares instead of percentage
+            weights (Dict[str, float]): Dictionary mapping symbols to weights
+            percentage (bool): Whether to use percentage returns. Defaults to False.
+            intraday_only (bool): Whether to use intraday only returns. Defaults to False.
+            method (str): Return calculation method ('log' or 'simple'). Defaults to 'simple'.
+            shares (bool): Whether to use weights as number of shares instead of percentage. Defaults to False.
+            
         Returns:
-            pd.DataFrame object containing portfolio returns
+            pd.DataFrame: Portfolio returns time series.
+            
+        Raises:
+            ValueError: If weights don't sum to 1.0 (when shares=False) or if symbols are not found.
         """
         # Validate weights
         if not all(symbol in self.data.columns for symbol in weights.keys()):
