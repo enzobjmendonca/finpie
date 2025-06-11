@@ -2,7 +2,7 @@
 FinPie - A comprehensive Python library for Brazilian financial data analysis and quantitative research
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
 from finpie.data import TimeSeries, MultiTimeSeries, RatioTimeSeries, SpreadTimeSeries
 from finpie.datasource.service import DataService
