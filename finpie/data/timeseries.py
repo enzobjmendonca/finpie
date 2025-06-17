@@ -269,12 +269,15 @@ class TimeSeries:
         returns = self.returns(intraday_only, method)
         return returns.data.mean()
     
-    def sharpe_ratio(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def sharpe_ratio(self, returns: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
         """
-        returns = self.returns(intraday_only, method)
-        return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
+        if returns:
+            returns = self.returns(intraday_only, method)
+            return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
+        else:
+            return (self.data.mean() / self.data.std()) * np.sqrt(252)
     
     def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
