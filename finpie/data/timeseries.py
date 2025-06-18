@@ -120,23 +120,26 @@ class TimeSeries:
         
         Args:
             intraday_only: Whether to drop the first record of each day
-            method: Return calculation method ('log' or 'simple')
+            method: Return calculation method ('log', 'simple', 'absolute')
             
         Returns:
             TimeSeries object with returns data
         """
         logger.info(f"Calculating {method} returns with intraday_only={intraday_only}")
         
-        if method not in ['log', 'simple']:
+        if method not in ['log', 'simple', 'absolute']:
             logger.error(f"Invalid method: {method}. Must be either 'log' or 'simple'")
             raise ValueError("Method must be either 'log' or 'simple'")
             
         if method == 'log':
             returns_df = np.log(self.data / self.data.shift(1))
             logger.debug("Calculated log returns")
-        else:
+        elif method == 'simple':
             returns_df = self.data.pct_change()
             logger.debug("Calculated simple returns")
+        elif method == 'absolute':
+            returns_df = self.data.diff()
+            logger.debug("Calculated absolute returns")
         
         if intraday_only:
             logger.debug("Dropping first record of each day")
@@ -269,15 +272,12 @@ class TimeSeries:
         returns = self.returns(intraday_only, method)
         return returns.data.mean()
     
-    def sharpe_ratio(self, returns: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def sharpe_ratio(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
         """
-        if returns:
-            returns = self.returns(intraday_only, method)
-            return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
-        else:
-            return (self.data.mean() / self.data.std()) * np.sqrt(252)
+        returns = self.returns(intraday_only, method)
+        return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
     
     def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
