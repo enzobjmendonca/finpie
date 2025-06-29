@@ -160,6 +160,12 @@ class TimeSeries:
         
         logger.info(f"Returns calculation complete. Data points: {len(returns_df)}")
         return TimeSeries(returns_df, returns_metadata)
+
+    def value(self, index: int) -> float:
+        """
+        Get the value of the time series at a specific index.
+        """
+        return self.data.iloc[index]
     
     def rolling(self, window: int, stats: List[str] = ['mean', 'std', 'min', 'max'], min_periods: Optional[int] = None) -> pd.DataFrame:
         """

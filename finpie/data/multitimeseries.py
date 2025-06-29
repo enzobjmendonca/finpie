@@ -53,6 +53,7 @@ class MultiTimeSeries(TimeSeries):
         # Create combined metadata
         self.metadata = self._create_metadata()
 
+    #TODO: handle missing values
     def _align_series(self) -> None:
         """Align all time series to a common index."""
 
