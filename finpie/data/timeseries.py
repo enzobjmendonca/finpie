@@ -38,7 +38,6 @@ class TimeSeries:
             data: DataFrame with datetime index and price columns
             metadata: TimeSeriesMetadata object containing series information
         """
-        logger.info(f"Initializing TimeSeries for symbol: {metadata.symbol if metadata else 'Unknown'}")
         self.data = data
         self.metadata = metadata if metadata != None else TimeSeriesMetadata(name='', symbol='', source='', 
                                                                              start_date=None, end_date=None, frequency='', 
@@ -63,9 +62,7 @@ class TimeSeries:
         if not data.index.is_monotonic_increasing and not data.index.is_monotonic_decreasing:
             logger.debug("Sorting index as it's not monotonic increasing or decreasing")
             self.data = data.sort_index()
-            
-        logger.info(f"TimeSeries initialized with {len(self.data)} data points from {self.start_date} to {self.end_date}")
-    
+                
     @property
     def start_date(self) -> datetime:
         """Get the start date of the time series."""
@@ -91,7 +88,6 @@ class TimeSeries:
         Returns:
             New TimeSeries object with resampled data
         """
-        logger.info(f"Resampling data to frequency: {freq}")
         resampled_data = self.data.resample(freq).agg({
             'open': 'first',
             'high': 'max',
@@ -111,7 +107,6 @@ class TimeSeries:
             additional_info=self.metadata.additional_info
         )
         
-        logger.info(f"Resampling complete. New data points: {len(resampled_data)}")
         return TimeSeries(resampled_data, new_metadata)
     
     def returns(self, intraday_only: bool = False, method: str = 'simple') -> 'TimeSeries':
@@ -125,8 +120,6 @@ class TimeSeries:
         Returns:
             TimeSeries object with returns data
         """
-        logger.info(f"Calculating {method} returns with intraday_only={intraday_only}")
-        
         if method not in ['log', 'simple', 'absolute']:
             logger.error(f"Invalid method: {method}. Must be either 'log' or 'simple'")
             raise ValueError("Method must be either 'log' or 'simple'")
@@ -158,7 +151,6 @@ class TimeSeries:
             additional_info=self.metadata.additional_info if self.metadata != None else {}
         )
         
-        logger.info(f"Returns calculation complete. Data points: {len(returns_df)}")
         return TimeSeries(returns_df, returns_metadata)
 
     def value(self, index: int) -> float:

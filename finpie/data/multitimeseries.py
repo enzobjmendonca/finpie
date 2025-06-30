@@ -17,7 +17,7 @@ class MultiTimeSeries(TimeSeries):
         metadata (TimeSeriesMetadata): Metadata for the combined time series
     """
     
-    def __init__(self, timeseries: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame]):
+    def __init__(self, timeseries: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame], is_returns: bool = False):
         """Initialize a MultiTimeSeries object.
         
         Args:
@@ -46,23 +46,27 @@ class MultiTimeSeries(TimeSeries):
                 self.timeseries = [TimeSeries(ts, None) for ts in timeseries]
             else:
                 raise ValueError("All elements in list must be either TimeSeries objects or pandas DataFrames")
-            self._align_series()
+            self._align_series(is_returns)
         else:
             raise ValueError("Input must be either a pandas DataFrame or a list of TimeSeries/DataFrame objects")
         
         # Create combined metadata
         self.metadata = self._create_metadata()
 
-    #TODO: handle missing values
-    def _align_series(self) -> None:
+    
+    def _align_series(self, is_returns: bool = False) -> None:
         """Align all time series to a common index."""
 
         aligned_df = self.timeseries[0].data
         col_index = 0   
         for ts in self.timeseries[1:]:
-            aligned_df = aligned_df.merge(ts.data, left_index=True, right_index=True, suffixes=('', '_' + str(col_index)))
+            aligned_df = aligned_df.merge(ts.data, left_index=True, right_index=True, suffixes=('', '_' + str(col_index)), how='outer')
             col_index += 1
         
+        if not is_returns:
+            aligned_df = aligned_df.ffill()
+        aligned_df = aligned_df.fillna(0)
+
         # Combine all aligned DataFrames
         self.data = aligned_df
         
@@ -199,17 +203,15 @@ class MultiTimeSeries(TimeSeries):
             data = self.returns(intraday_only, method).data
         else:
             data = self.data
-        portfolio_returns = pd.Series(0.0, index=data.index)
+        portfolio_values = pd.Series(0.0, index=data.index)
         
         total_weight = 0
         for symbol, weight in weights.items():
             total_weight += weight
-            portfolio_returns += weight * data[symbol]
-        if shares:
-            portfolio_returns = portfolio_returns / total_weight
+            portfolio_values += weight * data[symbol]
 
         # Create portfolio time series
-        portfolio_data = pd.DataFrame({'returns': portfolio_returns})
+        portfolio_data = pd.DataFrame({'values': portfolio_values})
         portfolio_metadata = TimeSeriesMetadata(
             name="portfolio",
             symbol="portfolio",
@@ -219,6 +221,7 @@ class MultiTimeSeries(TimeSeries):
             frequency=self.metadata.frequency,
             currency=self.metadata.currency,
             additional_info={
+                'is_shares': shares,
                 'weights': weights,
                 'constituents': list(weights.keys())
             }
