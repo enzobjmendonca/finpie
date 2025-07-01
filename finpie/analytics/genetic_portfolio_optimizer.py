@@ -37,10 +37,23 @@ class OptimizationConfig:
     max_drawdown_threshold: float = -30000
     random_seed: Optional[int] = None
     
+    # Weight mode configuration
+    weight_mode: str = "binary"  # "binary" or "integer"
+    min_weight: int = -10        # Minimum weight for integer mode
+    max_weight: int = 10         # Maximum weight for integer mode
+    
     # Mass extinction event parameters
     mass_extinction_events: int = 0          # Number of extinction events to trigger
     extinction_percentage: float = 0.7       # Percentage of population to kill (0.0 to 1.0)
     protect_elite_from_extinction: bool = True  # Whether elite individuals are protected from extinction
+    
+    def __post_init__(self):
+        """Validate configuration parameters."""
+        if self.weight_mode not in ["binary", "integer"]:
+            raise ValueError(f"weight_mode must be 'binary' or 'integer', got '{self.weight_mode}'")
+        
+        if self.weight_mode == "integer" and self.min_weight >= self.max_weight:
+            raise ValueError(f"min_weight ({self.min_weight}) must be less than max_weight ({self.max_weight})")
 
 
 @dataclass
@@ -57,39 +70,103 @@ class FitnessMetrics:
 class Individual:
     """Represents a single solution (portfolio strategy combination) in the genetic algorithm."""
     
-    def __init__(self, strategies: List[str], max_strategies: int):
+    def __init__(self, strategies, max_strategies: int, weight_mode: str = "binary", 
+                 min_weight: int = -10, max_weight: int = 10):
         """
-        Initialize an individual with a set of strategies.
+        Initialize an individual with strategies and weights.
         
         Args:
-            strategies: List of strategy names that make up this individual
+            strategies: For binary mode: List of strategy names
+                       For integer mode: Dict of {strategy: weight} or List of strategies  
             max_strategies: Maximum number of strategies allowed
+            weight_mode: "binary" or "integer"
+            min_weight: Minimum weight for integer mode
+            max_weight: Maximum weight for integer mode
         """
-        self.strategies = sorted(strategies)  # Keep strategies sorted for consistency
+        self.weight_mode = weight_mode
         self.max_strategies = max_strategies
+        self.min_weight = min_weight
+        self.max_weight = max_weight
+        
+        if weight_mode == "binary":
+            # Binary mode: keep original fast approach
+            if isinstance(strategies, dict):
+                # Convert weights dict to strategies list for binary mode
+                self._strategies = sorted([s for s, w in strategies.items() if w != 0])
+            else:
+                # Original list format
+                self._strategies = sorted(strategies)
+            # No weights dict needed for binary mode (keeps it fast)
+            
+        else:  # integer mode
+            # Integer mode: use weights dict but keep it simple (only non-zero weights)
+            if isinstance(strategies, dict):
+                # Store only non-zero weights for efficiency
+                self.weights = {s: w for s, w in strategies.items() if w != 0}
+            else:
+                # Convert list to weights (assume weight=1 for each)
+                self.weights = {strategy: 1 for strategy in strategies}
+            
+            # Cache for strategies list in integer mode
+            self._strategies_cache = None
+        
         self.fitness_metrics: Optional[FitnessMetrics] = None
         self.age = 0  # Track how many generations this individual has survived
         
+    @property
+    def strategies(self) -> List[str]:
+        """Get list of strategies (for backward compatibility)."""
+        if self.weight_mode == "binary":
+            return self._strategies
+        else:  # integer mode
+            if self._strategies_cache is None:
+                self._strategies_cache = sorted([s for s, w in self.weights.items() if w != 0])
+            return self._strategies_cache
+    
     def __eq__(self, other) -> bool:
         """Check if two individuals are identical."""
         if not isinstance(other, Individual):
             return False
-        return self.strategies == other.strategies
+        if self.weight_mode != other.weight_mode:
+            return False
+        
+        if self.weight_mode == "binary":
+            return self.strategies == other.strategies
+        else:  # integer mode
+            return self.weights == other.weights
     
     def __hash__(self) -> int:
         """Make Individual hashable for set operations."""
-        return hash(tuple(self.strategies))
+        if self.weight_mode == "binary":
+            return hash(tuple(self.strategies))
+        else:  # integer mode
+            return hash(tuple(sorted(self.weights.items())))
     
     def __repr__(self) -> str:
         """String representation of the individual."""
         fitness_str = f", fitness={self.fitness_metrics.fitness_score:.4f}" if self.fitness_metrics else ""
-        return f"Individual(strategies={self.strategies[:3]}{'...' if len(self.strategies) > 3 else ''}{fitness_str})"
+        
+        if self.weight_mode == "binary":
+            strategies_display = self.strategies[:3]
+            if len(self.strategies) > 3:
+                strategies_display = strategies_display + ["..."]
+            return f"Individual(strategies={strategies_display}{fitness_str})"
+        else:  # integer mode
+            weights_display = dict(list(self.weights.items())[:3])
+            if len(self.weights) > 3:
+                weights_display["..."] = "..."
+            return f"Individual(weights={weights_display}{fitness_str})"
     
     def get_weights(self) -> Dict[str, float]:
-        """Convert strategies to binary weights dictionary (1 for included, 0 for excluded)."""
-        if not self.strategies:
-            return {}
-        return {strategy: 1.0 for strategy in self.strategies}
+        """Get weights dictionary for portfolio calculation."""
+        if self.weight_mode == "binary":
+            # Binary mode: keep original fast approach
+            if not self.strategies:
+                return {}
+            return {strategy: 1.0 for strategy in self.strategies}
+        else:  # integer mode
+            # Integer mode: return weights as floats
+            return {strategy: float(weight) for strategy, weight in self.weights.items()}
     
     def mutate(self, available_strategies: List[str], mutation_rate: float, rng: np.random.RandomState) -> 'Individual':
         """
@@ -103,24 +180,69 @@ class Individual:
         Returns:
             New mutated Individual
         """
-        new_strategies = self.strategies.copy()
+        if self.weight_mode == "binary":
+            # Binary mode: keep original fast logic
+            new_strategies = self.strategies.copy()
+            
+            # Randomly remove strategies
+            if len(new_strategies) > 1:  # Keep at least one strategy
+                for i in range(len(new_strategies) - 1, -1, -1):
+                    if rng.random() < mutation_rate:
+                        new_strategies.pop(i)
+            
+            # Randomly add strategies
+            available_to_add = [s for s in available_strategies if s not in new_strategies]
+            while (len(new_strategies) < self.max_strategies and 
+                   available_to_add and 
+                   rng.random() < mutation_rate):
+                strategy_to_add = rng.choice(available_to_add)
+                new_strategies.append(strategy_to_add)
+                available_to_add.remove(strategy_to_add)
+            
+            return Individual(new_strategies, self.max_strategies, self.weight_mode, 
+                            self.min_weight, self.max_weight)
         
-        # Randomly remove strategies
-        if len(new_strategies) > 1:  # Keep at least one strategy
-            for i in range(len(new_strategies) - 1, -1, -1):
+        else:  # integer mode
+            # Integer mode: mutate weights
+            new_weights = self.weights.copy()
+            
+            # Mutate existing weights
+            for strategy in list(new_weights.keys()):
                 if rng.random() < mutation_rate:
-                    new_strategies.pop(i)
-        
-        # Randomly add strategies
-        available_to_add = [s for s in available_strategies if s not in new_strategies]
-        while (len(new_strategies) < self.max_strategies and 
-               available_to_add and 
-               rng.random() < mutation_rate):
-            strategy_to_add = rng.choice(available_to_add)
-            new_strategies.append(strategy_to_add)
-            available_to_add.remove(strategy_to_add)
-        
-        return Individual(new_strategies, self.max_strategies)
+                    mutation_type = rng.choice(['increment', 'decrement', 'zero'])
+                    current_weight = new_weights[strategy]
+                    
+                    if mutation_type == 'increment':
+                        new_weight = min(self.max_weight, current_weight + 1)
+                    elif mutation_type == 'decrement':
+                        new_weight = max(self.min_weight, current_weight - 1)
+                    else:  # zero
+                        new_weight = 0
+                    
+                    if new_weight == 0:
+                        del new_weights[strategy]  # Remove zero weights
+                    else:
+                        new_weights[strategy] = new_weight
+            
+            # Potentially add new weights for strategies not currently active
+            inactive_strategies = [s for s in available_strategies if s not in new_weights]
+            for strategy in inactive_strategies:
+                if (len(new_weights) < self.max_strategies and 
+                    rng.random() < mutation_rate):
+                    new_weight = rng.randint(self.min_weight, self.max_weight + 1)
+                    if new_weight != 0:
+                        new_weights[strategy] = new_weight
+            
+            # Ensure at least one strategy has non-zero weight
+            if not new_weights:
+                random_strategy = rng.choice(available_strategies)
+                new_weight = rng.randint(self.min_weight, self.max_weight + 1)
+                if new_weight == 0:  # In case range includes 0
+                    new_weight = 1 if rng.random() < 0.5 else -1
+                new_weights[random_strategy] = new_weight
+            
+            return Individual(new_weights, self.max_strategies, self.weight_mode, 
+                            self.min_weight, self.max_weight)
 
 
 class FitnessEvaluator:
@@ -150,15 +272,19 @@ class FitnessEvaluator:
         Returns:
             FitnessMetrics object with calculated metrics
         """
-        # Check cache first
-        cache_key = tuple(individual.strategies)
+        # Check cache first - create efficient cache key based on mode
+        if individual.weight_mode == "binary":
+            cache_key = tuple(individual.strategies)
+        else:  # integer mode
+            cache_key = tuple(sorted(individual.weights.items()))
+        
         if cache_key in self.cache:
             return self.cache[cache_key]
         
         # Check population history for identical individual
         for generation, population in self.population_history.items():
             for hist_individual in population:
-                if (hist_individual.strategies == individual.strategies and 
+                if (hist_individual == individual and 
                     hist_individual.fitness_metrics is not None):
                     # Cache this result for future use
                     self.cache[cache_key] = hist_individual.fitness_metrics
@@ -168,8 +294,7 @@ class FitnessEvaluator:
             # Calculate portfolio performance
             weights = individual.get_weights()
             portfolio_ts = self.mts.portfolio(weights=weights, shares=True, percentage=False)
-            portfolio_data = portfolio_ts.data * sum(weights.values())
-            portfolio_ts = TimeSeries(portfolio_data)
+            portfolio_data = portfolio_ts.data
 
             # Calculate metrics
             pnl = float(portfolio_data.iloc[-1].iloc[0])
@@ -270,13 +395,42 @@ class GeneticPortfolioOptimizer:
     
     def _create_random_individual(self) -> Individual:
         """Create a random individual."""
-        num_strategies = self.rng.randint(1, self.config.max_strategies + 1)
-        strategies = self.rng.choice(
-            self.available_strategies, 
-            size=num_strategies, 
-            replace=False
-        ).tolist()
-        return Individual(strategies, self.config.max_strategies)
+        if self.config.weight_mode == "binary":
+            # Binary mode: create random strategies list
+            num_strategies = self.rng.randint(1, self.config.max_strategies + 1)
+            strategies = self.rng.choice(
+                self.available_strategies, 
+                size=num_strategies, 
+                replace=False
+            ).tolist()
+            return Individual(strategies, self.config.max_strategies, self.config.weight_mode, 
+                            self.config.min_weight, self.config.max_weight)
+        else:
+            # Integer mode: create random weights
+            num_strategies = self.rng.randint(1, self.config.max_strategies + 1)
+            strategies = self.rng.choice(
+                self.available_strategies, 
+                size=num_strategies, 
+                replace=False
+            ).tolist()
+            
+            # Assign random weights (only non-zero ones)
+            weights = {}
+            for strategy in strategies:
+                weight = self.rng.randint(self.config.min_weight, self.config.max_weight + 1)
+                if weight != 0:
+                    weights[strategy] = weight
+            
+            # Ensure at least one strategy has non-zero weight
+            if not weights:
+                random_strategy = self.rng.choice(strategies)
+                weight = self.rng.randint(self.config.min_weight, self.config.max_weight + 1)
+                if weight == 0:
+                    weight = 1 if self.rng.random() < 0.5 else -1
+                weights[random_strategy] = weight
+            
+            return Individual(weights, self.config.max_strategies, self.config.weight_mode, 
+                            self.config.min_weight, self.config.max_weight)
     
     def _initialize_population(self) -> List[Individual]:
         """Initialize the population with random individuals."""
@@ -319,48 +473,94 @@ class GeneticPortfolioOptimizer:
     
     def _uniform_crossover(self, parent1: Individual, parent2: Individual) -> Tuple[Individual, Individual]:
         """Create offspring using uniform crossover."""
-        all_strategies = list(set(parent1.strategies + parent2.strategies))
         max_strategies = parent1.max_strategies
         
-        # Create first offspring
-        child1_strategies = []
-        for strategy in all_strategies:
-            if len(child1_strategies) < max_strategies:
-                # Choose from parent that has this strategy, or random if both have it
-                if strategy in parent1.strategies and strategy in parent2.strategies:
+        if parent1.weight_mode == "binary":
+            # Binary mode: use original crossover logic
+            all_strategies = list(set(parent1.strategies + parent2.strategies))
+            
+            # Create first offspring
+            child1_strategies = []
+            for strategy in all_strategies:
+                if len(child1_strategies) < max_strategies:
+                    # Choose from parent that has this strategy, or random if both have it
+                    if strategy in parent1.strategies and strategy in parent2.strategies:
+                        if self.rng.random() < 0.5:
+                            child1_strategies.append(strategy)
+                    elif strategy in parent1.strategies:
+                        if self.rng.random() < 0.7:  # Bias towards including parent strategies
+                            child1_strategies.append(strategy)
+                    elif strategy in parent2.strategies:
+                        if self.rng.random() < 0.7:
+                            child1_strategies.append(strategy)
+            
+            # Ensure minimum strategies
+            if not child1_strategies:
+                child1_strategies = [self.rng.choice(all_strategies)]
+            
+            # Create second offspring with complementary strategies
+            remaining_strategies = [s for s in all_strategies if s not in child1_strategies]
+            child2_strategies = []
+            
+            # Add some strategies from child1 to child2
+            for strategy in child1_strategies:
+                if len(child2_strategies) < max_strategies and self.rng.random() < 0.3:
+                    child2_strategies.append(strategy)
+            
+            # Add remaining strategies
+            for strategy in remaining_strategies:
+                if len(child2_strategies) < max_strategies and self.rng.random() < 0.7:
+                    child2_strategies.append(strategy)
+            
+            # Ensure minimum strategies
+            if not child2_strategies:
+                child2_strategies = [self.rng.choice(all_strategies)]
+                
+            return (Individual(child1_strategies, max_strategies, self.config.weight_mode, 
+                             self.config.min_weight, self.config.max_weight), 
+                    Individual(child2_strategies, max_strategies, self.config.weight_mode, 
+                             self.config.min_weight, self.config.max_weight))
+        
+        else:  # integer mode
+            # Integer mode: crossover weights
+            all_strategies = set(parent1.weights.keys()) | set(parent2.weights.keys())
+            
+            child1_weights = {}
+            child2_weights = {}
+            
+            # For each strategy, randomly inherit weights from parents
+            for strategy in all_strategies:
+                if len(child1_weights) < max_strategies and len(child2_weights) < max_strategies:
+                    p1_weight = parent1.weights.get(strategy, 0)
+                    p2_weight = parent2.weights.get(strategy, 0)
+                    
+                    # Random crossover of weights
                     if self.rng.random() < 0.5:
-                        child1_strategies.append(strategy)
-                elif strategy in parent1.strategies:
-                    if self.rng.random() < 0.7:  # Bias towards including parent strategies
-                        child1_strategies.append(strategy)
-                elif strategy in parent2.strategies:
-                    if self.rng.random() < 0.7:
-                        child1_strategies.append(strategy)
-        
-        # Ensure minimum strategies
-        if not child1_strategies:
-            child1_strategies = [self.rng.choice(all_strategies)]
-        
-        # Create second offspring with complementary strategies
-        remaining_strategies = [s for s in all_strategies if s not in child1_strategies]
-        child2_strategies = []
-        
-        # Add some strategies from child1 to child2
-        for strategy in child1_strategies:
-            if len(child2_strategies) < max_strategies and self.rng.random() < 0.3:
-                child2_strategies.append(strategy)
-        
-        # Add remaining strategies
-        for strategy in remaining_strategies:
-            if len(child2_strategies) < max_strategies and self.rng.random() < 0.7:
-                child2_strategies.append(strategy)
-        
-        # Ensure minimum strategies
-        if not child2_strategies:
-            child2_strategies = [self.rng.choice(all_strategies)]
-        
-        return (Individual(child1_strategies, max_strategies), 
-                Individual(child2_strategies, max_strategies))
+                        if p1_weight != 0:
+                            child1_weights[strategy] = p1_weight
+                        if p2_weight != 0:
+                            child2_weights[strategy] = p2_weight
+                    else:
+                        if p2_weight != 0:
+                            child1_weights[strategy] = p2_weight
+                        if p1_weight != 0:
+                            child2_weights[strategy] = p1_weight
+            
+            # Ensure both children have at least one strategy
+            if not child1_weights:
+                strategy = self.rng.choice(list(all_strategies))
+                weight = parent1.weights.get(strategy, 1) if strategy in parent1.weights else parent2.weights.get(strategy, 1)
+                child1_weights[strategy] = weight
+            
+            if not child2_weights:
+                strategy = self.rng.choice(list(all_strategies))
+                weight = parent2.weights.get(strategy, 1) if strategy in parent2.weights else parent1.weights.get(strategy, 1)
+                child2_weights[strategy] = weight
+                
+            return (Individual(child1_weights, max_strategies, self.config.weight_mode, 
+                             self.config.min_weight, self.config.max_weight), 
+                    Individual(child2_weights, max_strategies, self.config.weight_mode, 
+                             self.config.min_weight, self.config.max_weight))
     
     def _create_next_generation(self, population: List[Individual]) -> List[Individual]:
         """Create the next generation using selection, crossover, and mutation."""
@@ -956,7 +1156,7 @@ class GeneticPortfolioOptimizer:
         
         # Create the plot
         fig, axes = plt.subplots(2, 2, figsize=figsize)
-        fig.suptitle('🧬 Genetic Optimization Progress', fontsize=16)
+        fig.suptitle('Genetic Optimization Progress', fontsize=16)
         
         # Fitness evolution
         axes[0, 0].plot(history['generation'], history['best_fitness'], 'b-', linewidth=2, label='Best Fitness')
@@ -965,12 +1165,12 @@ class GeneticPortfolioOptimizer:
         # Add extinction vertical lines
         for i, gen in enumerate(self.extinction_generations):
             axes[0, 0].axvline(x=gen, color='red', linestyle=':', alpha=0.8, linewidth=2)
-            axes[0, 0].text(gen, axes[0, 0].get_ylim()[1] * 0.95, f'💀 #{i+1}', rotation=90, 
+            axes[0, 0].text(gen, axes[0, 0].get_ylim()[1] * 0.95, f'#{i+1}', rotation=90, 
                            verticalalignment='top', horizontalalignment='right', fontsize=9, color='darkred')
         
         axes[0, 0].set_xlabel('Generation')
         axes[0, 0].set_ylabel('Fitness Score')
-        axes[0, 0].set_title('💪 Fitness Evolution')
+        axes[0, 0].set_title('Fitness Evolution')
         axes[0, 0].legend()
         axes[0, 0].grid(True, alpha=0.3)
         
@@ -978,12 +1178,12 @@ class GeneticPortfolioOptimizer:
         axes[0, 1].plot(history['generation'], history['best_pnl'], 'g-', linewidth=2)
         
         # Add extinction vertical lines
-        for gen in self.extinction_generations:
+        for gen in self.extincti    on_generations:
             axes[0, 1].axvline(x=gen, color='red', linestyle=':', alpha=0.8, linewidth=2)
         
         axes[0, 1].set_xlabel('Generation')
         axes[0, 1].set_ylabel('PnL')
-        axes[0, 1].set_title('💰 Best PnL Evolution')
+        axes[0, 1].set_title('Best PnL Evolution')
         axes[0, 1].grid(True, alpha=0.3)
         
         # Population diversity
@@ -995,7 +1195,7 @@ class GeneticPortfolioOptimizer:
         
         axes[1, 0].set_xlabel('Generation')
         axes[1, 0].set_ylabel('Unique Individuals')
-        axes[1, 0].set_title('🌟 Population Diversity')
+        axes[1, 0].set_title('Population Diversity')
         axes[1, 0].grid(True, alpha=0.3)
         
         # Strategy count evolution
@@ -1007,7 +1207,7 @@ class GeneticPortfolioOptimizer:
         
         axes[1, 1].set_xlabel('Generation')
         axes[1, 1].set_ylabel('Number of Strategies')
-        axes[1, 1].set_title('📊 Best Individual Strategy Count')
+        axes[1, 1].set_title('Best Individual Strategy Count')
         axes[1, 1].grid(True, alpha=0.3)
         
         plt.tight_layout()
@@ -1015,7 +1215,7 @@ class GeneticPortfolioOptimizer:
         
         # Print extinction summary
         if self.extinction_generations:
-            print(f"\n🌋 EXTINCTION EVENTS SUMMARY:")
+            print(f"\nEXTINCTION EVENTS SUMMARY:")
             print(f"   Total events: {len(self.extinction_generations)}")
             print(f"   Occurred at generations: {self.extinction_generations}")
             print(f"   Kill percentage: {self.config.extinction_percentage:.1%}")
@@ -1073,39 +1273,94 @@ class GeneticPortfolioOptimizer:
         plt.tight_layout()
         plt.show()
 
-# Example usage function
-def run_optimization_example(mts: MultiTimeSeries) -> Tuple[Individual, pd.DataFrame]:
+# Example usage functions
+def run_binary_optimization_example(mts: MultiTimeSeries) -> Tuple[Individual, pd.DataFrame]:
     """
-    Example function showing how to use the genetic optimizer.
+    Run a binary mode optimization example with the provided MultiTimeSeries data.
     
     Args:
         mts: MultiTimeSeries object containing strategy data
         
     Returns:
-        Tuple of (best_individual, optimization_history)
+        Tuple of (best_individual, history_dataframe)
     """
-    # Configure optimization
+    # Create configuration for binary mode
     config = OptimizationConfig(
-        population_size=50,          # Smaller for faster execution
-        max_generations=100,         # Fewer generations for demo
-        max_strategies=8,            # Limit strategies per portfolio
-        elite_size=5,               # Keep best 5 individuals
-        tournament_size=3,          # Tournament selection size
-        crossover_rate=0.8,         # 80% crossover probability
-        mutation_rate=0.1,          # 10% mutation probability
-        early_stopping_patience=20, # Stop if no improvement for 20 generations
-        random_seed=42              # For reproducible results
+        population_size=50,
+        max_generations=100,
+        max_strategies=5,
+        elite_size=5,
+        crossover_rate=0.8,
+        mutation_rate=0.1,
+        early_stopping_patience=20,
+        weight_mode="binary",
+        random_seed=42
     )
     
-    # Create and run optimizer
+    # Run optimization
     optimizer = GeneticPortfolioOptimizer(mts, config)
     best_individual, history = optimizer.optimize()
     
-    # Print results
-    print(f"\nOptimization Results:")
-    print(f"Best strategies: {best_individual.strategies}")
-    print(f"Best PnL: {best_individual.fitness_metrics.pnl:.2f}")
-    print(f"Best Max Drawdown: {best_individual.fitness_metrics.max_drawdown:.2f}")
-    print(f"Best Sharpe Ratio: {best_individual.fitness_metrics.sharpe_ratio:.4f}")
+    print(f"Binary Mode - Best individual found:")
+    print(f"  Strategies: {best_individual.strategies}")
+    print(f"  Weights: {best_individual.get_weights()}")
+    print(f"  Fitness: {best_individual.fitness_metrics.fitness_score:.4f}")
+    print(f"  PnL: {best_individual.fitness_metrics.pnl:.2f}")
+    print(f"  Sharpe Ratio: {best_individual.fitness_metrics.sharpe_ratio:.4f}")
+    print(f"  Max Drawdown: {best_individual.fitness_metrics.max_drawdown:.2f}")
     
-    return best_individual, history 
+    return best_individual, history
+
+
+def run_integer_optimization_example(mts: MultiTimeSeries) -> Tuple[Individual, pd.DataFrame]:
+    """
+    Run an integer mode optimization example with the provided MultiTimeSeries data.
+    
+    Args:
+        mts: MultiTimeSeries object containing strategy data
+        
+    Returns:
+        Tuple of (best_individual, history_dataframe)
+    """
+    # Create configuration for integer mode
+    config = OptimizationConfig(
+        population_size=50,
+        max_generations=100,
+        max_strategies=5,
+        elite_size=5,
+        crossover_rate=0.8,
+        mutation_rate=0.1,
+        early_stopping_patience=20,
+        weight_mode="integer",
+        min_weight=-5,
+        max_weight=5,
+        random_seed=42
+    )
+    
+    # Run optimization
+    optimizer = GeneticPortfolioOptimizer(mts, config)
+    best_individual, history = optimizer.optimize()
+    
+    print(f"Integer Mode - Best individual found:")
+    print(f"  Strategies: {best_individual.strategies}")
+    print(f"  Weights: {best_individual.get_weights()}")
+    print(f"  Fitness: {best_individual.fitness_metrics.fitness_score:.4f}")
+    print(f"  PnL: {best_individual.fitness_metrics.pnl:.2f}")
+    print(f"  Sharpe Ratio: {best_individual.fitness_metrics.sharpe_ratio:.4f}")
+    print(f"  Max Drawdown: {best_individual.fitness_metrics.max_drawdown:.2f}")
+    
+    return best_individual, history
+
+
+def run_optimization_example(mts: MultiTimeSeries) -> Tuple[Individual, pd.DataFrame]:
+    """
+    Run a simple optimization example with the provided MultiTimeSeries data.
+    (Defaults to binary mode for backward compatibility)
+    
+    Args:
+        mts: MultiTimeSeries object containing strategy data
+        
+    Returns:
+        Tuple of (best_individual, history_dataframe)
+    """
+    return run_binary_optimization_example(mts) 

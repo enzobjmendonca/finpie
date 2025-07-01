@@ -205,9 +205,7 @@ class MultiTimeSeries(TimeSeries):
             data = self.data
         portfolio_values = pd.Series(0.0, index=data.index)
         
-        total_weight = 0
         for symbol, weight in weights.items():
-            total_weight += weight
             portfolio_values += weight * data[symbol]
 
         # Create portfolio time series
