@@ -1177,9 +1177,11 @@ class GeneticPortfolioOptimizer:
         # PnL evolution
         axes[0, 1].plot(history['generation'], history['best_pnl'], 'g-', linewidth=2)
         
-        # Add extinction vertical lines
-        for gen in self.extincti    on_generations:
+        # Add extinction vertical lines with labels
+        for i, gen in enumerate(self.extinction_generations):
             axes[0, 1].axvline(x=gen, color='red', linestyle=':', alpha=0.8, linewidth=2)
+            axes[0, 1].text(gen, axes[0, 1].get_ylim()[1] * 0.95, f'#{i+1}', rotation=90, 
+                           verticalalignment='top', horizontalalignment='right', fontsize=9, color='darkred')
         
         axes[0, 1].set_xlabel('Generation')
         axes[0, 1].set_ylabel('PnL')
