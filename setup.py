@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="finpie",
-    version="0.1.31",
+    version="0.1.32",
     author="Enzo Mendonça",
     author_email="enzobjmendonca@gmail.com",
     description="A comprehensive Python library for Brazilian financial data analysis and quantitative research",
