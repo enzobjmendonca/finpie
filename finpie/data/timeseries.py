@@ -44,8 +44,11 @@ class TimeSeries:
                                                                              currency='', additional_info={})
         # Validate data
         if not isinstance(data.index, pd.DatetimeIndex):
-            logger.error("Data must have a DatetimeIndex")
-            raise ValueError("Data must have a DatetimeIndex")
+            try:
+                data.index = pd.to_datetime(data.index)
+            except:
+                logger.error("Data must have a DatetimeIndex")
+                raise ValueError("Data must have a DatetimeIndex")
         
         if isinstance(data, pd.DataFrame) and len(data.columns) > 1:
             logger.error("Data must have only one column, please use MultiTimeSeries for multiple columns")
@@ -256,12 +259,16 @@ class TimeSeries:
         returns = self.returns(intraday_only, method)
         return returns.data.add(1).cumprod() - 1
     
-    def volatility(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def volatility(self, intraday_only: bool = False, method: str = 'simple', annualized: bool = True) -> pd.Series:
         """
         Calculate the volatility of the time series.
         """
         returns = self.returns(intraday_only, method)
-        return returns.data.std() 
+        volatility = returns.data.std()
+        if annualized:
+            return volatility * np.sqrt(252)
+        else:
+            return volatility
     
     def mean_return(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """

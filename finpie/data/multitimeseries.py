@@ -175,7 +175,7 @@ class MultiTimeSeries(TimeSeries):
         return MultiTimeSeries(returns_series)
     
     def portfolio(self, weights: Dict[str, float], percentage: bool = False, 
-                 intraday_only: bool = False, method: str = 'simple', shares: bool = False) -> pd.DataFrame:
+                 intraday_only: bool = False, method: str = 'simple', shares: bool = False, portfolio_name: str = 'portfolio') -> pd.DataFrame:
         """Calculate portfolio returns using given weights.
         
         Args:
@@ -209,10 +209,10 @@ class MultiTimeSeries(TimeSeries):
             portfolio_values += weight * data[symbol]
 
         # Create portfolio time series
-        portfolio_data = pd.DataFrame({'values': portfolio_values})
+        portfolio_data = pd.DataFrame({portfolio_name: portfolio_values})
         portfolio_metadata = TimeSeriesMetadata(
-            name="portfolio",
-            symbol="portfolio",
+            name=portfolio_name,
+            symbol=portfolio_name,
             source="combined",
             start_date=portfolio_data.index[0],
             end_date=portfolio_data.index[-1],
