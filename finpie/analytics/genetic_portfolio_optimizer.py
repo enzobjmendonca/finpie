@@ -11,7 +11,7 @@ Author: AI Assistant
 import numpy as np
 import pandas as pd
 import logging
-from typing import List, Dict, Tuple, Optional, Any
+from typing import Callable, List, Dict, Tuple, Optional, Any
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from copy import deepcopy
@@ -34,8 +34,8 @@ class OptimizationConfig:
     mutation_rate: float = 0.1
     early_stopping_patience: int = 50
     convergence_threshold: float = 1e-6
-    max_drawdown_threshold: float = -30000
     random_seed: Optional[int] = None
+    fitness_score_function: Callable[[TimeSeries], float] = None
     
     # Weight mode configuration
     weight_mode: str = "binary"  # "binary" or "integer"
@@ -261,6 +261,7 @@ class FitnessEvaluator:
         self.config = config
         self.cache: Dict[tuple, FitnessMetrics] = {}
         self.population_history = population_history or {}
+        self._calculate_fitness_score = self.config.fitness_score_function if self.config.fitness_score_function is not None else self._calculate_fitness_score
     
     def evaluate(self, individual: Individual) -> FitnessMetrics:
         """
@@ -307,7 +308,7 @@ class FitnessEvaluator:
             return_to_risk = abs(pnl / volatility) if volatility != 0 else 0.0
             
             # Calculate composite fitness score
-            fitness_score = self._calculate_fitness_score(pnl, max_dd, sharpe, return_to_risk)
+            fitness_score = self._calculate_fitness_score(self, portfolio_ts)
             
             metrics = FitnessMetrics(
                 pnl=pnl,
@@ -334,25 +335,17 @@ class FitnessEvaluator:
                 fitness_score=-1e6
             )
     
-    def _calculate_fitness_score(self, pnl: float, max_drawdown: float, 
-                                sharpe_ratio: float, return_to_risk: float) -> float:
+    def _calculate_fitness_score(self, timeseries: TimeSeries) -> float:
         """
         Calculate composite fitness score.
         
         Args:
-            pnl: Profit and loss
-            max_drawdown: Maximum drawdown
-            sharpe_ratio: Sharpe ratio
-            return_to_risk: Return to risk ratio
+            timeseries: TimeSeries object containing the portfolio data
             
         Returns:
             Composite fitness score
         """
-        # Weighted combination of metrics
-        fitness = pnl * (max_drawdown > self.config.max_drawdown_threshold)
-        
-        return float(fitness)
-
+        return timeseries.value(-1)[0]
 
 class GeneticPortfolioOptimizer:
     """Main genetic algorithm optimizer for portfolio strategy selection."""

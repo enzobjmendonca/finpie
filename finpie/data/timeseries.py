@@ -299,7 +299,31 @@ class TimeSeries:
         drawdown = cum_rets - running_max
         # Get the maximum drawdown
         return drawdown.min()
+    
+    def generate_bootraped_timeseries(self, simulations: int = 1000, intraday_only: bool = False, method: str = 'simple') -> List['TimeSeries']:
+        """
+        Generates a bootstrapped time series.
+        """
+        if self.metadata.is_returns:
+            returns = self
+        else:
+            returns = self.returns(intraday_only, method)
 
+        returns.data.fillna(0, inplace = True)
+        
+        shuffled_timeseries = []
+
+        for i in range(simulations):
+            shuffled = np.random.permutation(returns.data[returns.data.columns[0]])
+            shuffled = shuffled.cumsum()
+            ts = TimeSeries(
+                pd.DataFrame({'values': shuffled}, index=returns.data.index), 
+                metadata=None
+            )
+            shuffled_timeseries.append(ts)
+        return shuffled_timeseries
+        
+    
     def value_at_risk(self, percentage: bool = True, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Value at Risk (VaR) of the time series.
