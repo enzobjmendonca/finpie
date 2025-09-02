@@ -365,8 +365,45 @@ class TimeSeries:
         else:
             return (type(self)(self.data.iloc[:n]), type(self)(self.data.iloc[n:]))
     
-    
-    
+    def __add__(self, other):
+        """
+        Overload the + operator for TimeSeries.
+        """
+        if isinstance(other, type(self)):
+            new_data = self.data.add(other.data, fill_value=0)
+        else:
+            new_data = self.data + other
+        return type(self)(new_data)
+
+    def __sub__(self, other):
+        """
+        Overload the - operator for TimeSeries.
+        """
+        if isinstance(other, type(self)):
+            new_data = self.data.sub(other.data, fill_value=0)
+        else:
+            new_data = self.data - other
+        return type(self)(new_data)
+
+    def __mul__(self, other):
+        """
+        Overload the * operator for TimeSeries.
+        """
+        if isinstance(other, type(self)):
+            new_data = self.data.mul(other.data, fill_value=1)
+        else:
+            new_data = self.data * other
+        return type(self)(new_data)
+
+    def __truediv__(self, other):
+        """
+        Overload the / operator for TimeSeries.
+        """
+        if isinstance(other, type(self)):
+            new_data = self.data.div(other.data, fill_value=1)
+        else:
+            new_data = self.data / other
+        return type(self)(new_data)
     
     
     
