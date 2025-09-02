@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List, Tuple, Union
 import pandas as pd
 import numpy as np
 import logging
@@ -310,11 +310,11 @@ class TimeSeries:
             returns = self.returns(intraday_only, method)
 
         returns.data.fillna(0, inplace = True)
-        
+
         shuffled_timeseries = []
 
         for i in range(simulations):
-            shuffled = np.random.permutation(returns.data[returns.data.columns[0]])
+            shuffled = np.random.permutation(returns.data)
             shuffled = shuffled.cumsum()
             ts = TimeSeries(
                 pd.DataFrame({'values': shuffled}, index=returns.data.index), 
@@ -354,7 +354,16 @@ class TimeSeries:
         for col in returns_df.columns:
             acorr_map[col] = returns_df[col].autocorr(lag)
         return pd.Series(acorr_map)
-        
+
+    def slice(self, n: float, is_percentage: bool = True) -> Tuple['TimeSeries']:
+        """
+        Slice the time series.
+        """
+        #cmon, this type(self) stuff is nice
+        if is_percentage:
+            return (type(self)(self.data.iloc[:int(n * len(self.data))]), type(self)(self.data.iloc[int(n * len(self.data)):]))
+        else:
+            return (type(self)(self.data.iloc[:n]), type(self)(self.data.iloc[n:]))
     
     
     
