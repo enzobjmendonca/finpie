@@ -21,6 +21,7 @@ class MultiTimeSeries(TimeSeries):
     Since it extends TimeSeries (which extends pd.DataFrame), it inherits all pandas DataFrame
     functionality while adding specialized multi-series operations.
     """
+    _metadata = ['_individual_timeseries']
     
     def __init__(self, timeseries: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame], 
                  is_returns: bool = False, metadata: TimeSeriesMetadata = None, **kwargs):
@@ -89,8 +90,9 @@ class MultiTimeSeries(TimeSeries):
         
         # Initialize parent TimeSeries with combined data
         super().__init__(combined_data, metadata, **kwargs)
+        
         self._individual_timeseries = _individual_timeseries
-    
+        
     def _align_series(self, is_returns: bool = False) -> pd.DataFrame:
         """Align all time series to a common index."""
         if not self._individual_timeseries:
@@ -137,7 +139,7 @@ class MultiTimeSeries(TimeSeries):
             return pd.DataFrame()
         
         # Start with the first time series
-        aligned_df = individual_timeseries[0].copy()
+        aligned_df = pd.DataFrame(individual_timeseries[0].copy())
         
         # Rename column to avoid conflicts
         if len(aligned_df.columns) == 1:
@@ -270,7 +272,7 @@ class MultiTimeSeries(TimeSeries):
         
         return data_to_use.cov(min_periods=min_periods)
     
-    def returns(self, intraday_only: bool = False, method: str = 'simple') -> 'MultiTimeSeries':
+    def returns(self, intraday_only: bool = False, method: str = 'absolute') -> 'MultiTimeSeries':
         """
         Calculate returns for all time series.
         
@@ -291,8 +293,8 @@ class MultiTimeSeries(TimeSeries):
         # Create new MultiTimeSeries with returns data
         return MultiTimeSeries(returns_df, is_returns=True)
     
-    def portfolio(self, weights: Dict[str, float], percentage: bool = False, 
-                 intraday_only: bool = False, method: str = 'simple', 
+    def portfolio(self, weights: Dict[str, float], 
+                 intraday_only: bool = False, method: str = 'absolute', 
                  shares: bool = False, portfolio_name: str = 'portfolio') -> TimeSeries:
         """Calculate portfolio returns using given weights.
         
@@ -319,7 +321,7 @@ class MultiTimeSeries(TimeSeries):
             raise ValueError("Weights must sum to 1.0 when shares=False")
         
         # Use returns or original data
-        if percentage:
+        if method != 'absolute':
             data_to_use = self.returns(intraday_only, method)
         else:
             data_to_use = self

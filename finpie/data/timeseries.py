@@ -55,7 +55,7 @@ class TimeSeries(pd.DataFrame):
         
         if isinstance(data, dict):
             data = pd.DataFrame(data)
-            
+
         # Initialize DataFrame - handle copy parameter separately since it might conflict
         df_kwargs = kwargs.copy()
         if copy is not None:
@@ -126,7 +126,19 @@ class TimeSeries(pd.DataFrame):
     @property
     def metadata(self) -> TimeSeriesMetadata:
         """Get the metadata of the time series."""
-        return self._ts_metadata
+        if hasattr(self, '_ts_metadata'):
+            return self._ts_metadata
+        else:
+            return TimeSeriesMetadata(
+                name=self.columns[0] if len(self.columns) > 0 else '',
+                symbol='',
+                source='',
+                start_date=self.index[0] if len(self.index) > 0 else datetime.now(),
+                end_date=self.index[-1] if len(self.index) > 0 else datetime.now(),
+                frequency='',
+                currency='',
+                additional_info={}
+            )
     
     @metadata.setter
     def metadata(self, value: TimeSeriesMetadata):
@@ -192,7 +204,7 @@ class TimeSeries(pd.DataFrame):
         
         return TimeSeries(resampled_data, new_metadata)
     
-    def returns(self, intraday_only: bool = False, method: str = 'simple') -> 'TimeSeries':
+    def returns(self, intraday_only: bool = False, method: str = 'absolute') -> 'TimeSeries':
         """
         Calculate returns for the time series.
         
@@ -339,7 +351,7 @@ class TimeSeries(pd.DataFrame):
         
         return cls(data, metadata)
     
-    def cum_returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.DataFrame:
+    def cum_returns(self, intraday_only: bool = False, method: str = 'absolute') -> pd.DataFrame:
         """
         Calculate the cumulative returns of the time series.
         
@@ -353,7 +365,7 @@ class TimeSeries(pd.DataFrame):
         returns = self.returns(intraday_only, method)
         return (returns + 1).cumprod() - 1
     
-    def volatility(self, intraday_only: bool = False, method: str = 'simple', 
+    def volatility(self, intraday_only: bool = False, method: str = 'absolute', 
                   annualized: bool = True) -> pd.Series:
         """
         Calculate the volatility of the time series.
@@ -373,7 +385,7 @@ class TimeSeries(pd.DataFrame):
         else:
             return volatility
     
-    def mean_return(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def mean_return(self, intraday_only: bool = False, method: str = 'absolute') -> pd.Series:
         """
         Calculate the mean return of the time series.
         
@@ -387,7 +399,7 @@ class TimeSeries(pd.DataFrame):
         returns = self.returns(intraday_only, method)
         return returns.mean()
     
-    def sharpe_ratio(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def sharpe_ratio(self, intraday_only: bool = False, method: str = 'absolute') -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
         
@@ -401,8 +413,8 @@ class TimeSeries(pd.DataFrame):
         returns = self.returns(intraday_only, method)
         return (returns.mean() / returns.std()) * np.sqrt(252)
     
-    def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, 
-                    method: str = 'simple') -> pd.Series:
+    def max_drawdown(self, intraday_only: bool = False, 
+                    method: str = 'absolute') -> pd.Series:
         """
         Calculate the maximum drawdown of the time series.
         
@@ -414,7 +426,7 @@ class TimeSeries(pd.DataFrame):
         Returns:
             Series with maximum drawdown values
         """
-        if percentage:
+        if method != 'absolute':
             cum_rets = self.cum_returns(intraday_only, method)
         else:
             cum_rets = self.copy()
@@ -427,7 +439,7 @@ class TimeSeries(pd.DataFrame):
         return drawdown.min()
     
     def generate_bootstrapped_timeseries(self, simulations: int = 1000, intraday_only: bool = False, 
-                                       method: str = 'simple') -> List['TimeSeries']:
+                                       method: str = 'absolute') -> List['TimeSeries']:
         """
         Generate bootstrapped time series.
         
@@ -458,13 +470,12 @@ class TimeSeries(pd.DataFrame):
         
         return shuffled_timeseries
     
-    def value_at_risk(self, percentage: bool = True, confidence_level: float = 0.05, 
-                     intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def value_at_risk(self, confidence_level: float = 0.05, 
+                     intraday_only: bool = False, method: str = 'absolute') -> pd.Series:
         """
         Calculate the Value at Risk (VaR) of the time series.
         
         Args:
-            percentage: Whether to use percentage returns or absolute changes
             confidence_level: Confidence level for VaR calculation
             intraday_only: Whether to use intraday only returns
             method: Return calculation method
@@ -472,12 +483,12 @@ class TimeSeries(pd.DataFrame):
         Returns:
             Series with VaR values
         """
-        if percentage:
+        if method != 'absolute':
             return self.returns(intraday_only, method).quantile(confidence_level)
         else:
             return self.diff().quantile(confidence_level)
     
-    def skewness(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def skewness(self, intraday_only: bool = False, method: str = 'absolute') -> pd.Series:
         """
         Calculate the skewness of the time series.
         
@@ -490,7 +501,7 @@ class TimeSeries(pd.DataFrame):
         """
         return self.returns(intraday_only, method).skew()
     
-    def kurtosis(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def kurtosis(self, intraday_only: bool = False, method: str = 'absolute') -> pd.Series:
         """
         Calculate the kurtosis of the time series.
         
@@ -504,7 +515,7 @@ class TimeSeries(pd.DataFrame):
         return self.returns(intraday_only, method).kurt()
     
     def autocorrelation(self, lag: int = 1, intraday_only: bool = False, 
-                       method: str = 'simple') -> pd.Series:
+                       method: str = 'absolute') -> pd.Series:
         """
         Calculate the autocorrelation of the time series.
         
