@@ -21,7 +21,7 @@ ToDate={end_date}
 Report=backtest_{symbol}_{datetime.now().strftime('%Y%m%d_%H%M%S')}
 Optimization={optimization}
 ShutdownTerminal=1
-OptimizationCriterion
+OptimizationCriterion=6
 """
     
     config_path = f"backtest_config_{symbol}.ini"

@@ -53,6 +53,9 @@ class TimeSeries(pd.DataFrame):
                 data.name = 'close'
             data = data.to_frame()
         
+        if isinstance(data, dict):
+            data = pd.DataFrame(data)
+            
         # Initialize DataFrame - handle copy parameter separately since it might conflict
         df_kwargs = kwargs.copy()
         if copy is not None:
