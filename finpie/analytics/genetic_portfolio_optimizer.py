@@ -295,7 +295,7 @@ class FitnessEvaluator:
             # Calculate portfolio performance
             weights = individual.get_weights()
             portfolio_ts = self.mts.portfolio(weights=weights, shares=True, percentage=False)
-            portfolio_data = portfolio_ts.data
+            portfolio_data = portfolio_ts
 
             # Calculate metrics
             pnl = float(portfolio_data.iloc[-1].iloc[0])
@@ -303,8 +303,7 @@ class FitnessEvaluator:
             sharpe = float(portfolio_ts.sharpe_ratio(method='absolute').iloc[0])
             
             # Calculate additional metrics
-            returns = portfolio_ts.returns()
-            volatility = float(returns.volatility().iloc[0]) if not returns.data.empty else 0.0
+            volatility = float(portfolio_ts.volatility(method='absolute').iloc[0])
             return_to_risk = abs(pnl / volatility) if volatility != 0 else 0.0
             
             # Calculate composite fitness score
@@ -360,7 +359,7 @@ class GeneticPortfolioOptimizer:
         """
         self.mts = mts
         self.config = config or OptimizationConfig()
-        self.available_strategies = list(mts.data.columns)
+        self.available_strategies = list(mts.columns)
         
         # Initialize random number generator
         if self.config.random_seed is not None:

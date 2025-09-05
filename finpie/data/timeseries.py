@@ -21,67 +21,131 @@ class TimeSeriesMetadata:
     additional_info: Dict[str, Any]
     is_returns: bool = False
 
-class TimeSeries:
+class TimeSeries(pd.DataFrame):
     """
-    Base class for time series data.
+    TimeSeries class that extends pandas DataFrame.
     
     This class provides core functionality for handling time series data,
     including basic operations like resampling, returns calculation,
-    and statistical measures.
+    and statistical measures while maintaining full pandas DataFrame compatibility.
     """
     
-    def __init__(self, data: pd.DataFrame, metadata: TimeSeriesMetadata = None):
+    # Define metadata properties that should be preserved during pandas operations
+    _metadata = ['_ts_metadata']
+    
+    def __init__(self, data: Union[pd.DataFrame, pd.Series, np.ndarray, dict, list] = None, 
+                 metadata: TimeSeriesMetadata = None, index=None, columns=None, copy=None, **kwargs):
         """
         Initialize a TimeSeries object.
         
         Args:
-            data: DataFrame with datetime index and price columns
+            data: DataFrame, Series, array, dict, or list with datetime index and price columns
             metadata: TimeSeriesMetadata object containing series information
+            index: Index to use for resulting frame
+            columns: Column labels to use for resulting frame
+            **kwargs: Additional arguments passed to pandas DataFrame constructor
         """
-        self.data = data
-        self.metadata = metadata if metadata != None else TimeSeriesMetadata(name='', symbol='', source='', 
-                                                                             start_date=None, end_date=None, frequency='', 
-                                                                             currency='', additional_info={})
-        # Validate data
+        # Handle different input types
+        if isinstance(data, pd.Series):
+            # Convert Series to DataFrame
+            logger.debug("Converting Series to DataFrame")
+            if data.name is None:
+                data.name = 'close'
+            data = data.to_frame()
+        
+        # Initialize DataFrame - handle copy parameter separately since it might conflict
+        df_kwargs = kwargs.copy()
+        if copy is not None:
+            df_kwargs['copy'] = copy
+
+        # Validate and process data
+        self._validate_and_process(data)
+
+        super().__init__(data=data, index=index, columns=columns, **df_kwargs)
+        
+        # Set default metadata if none provided
+        if metadata is None:
+            metadata = TimeSeriesMetadata(
+                name=self.columns[0] if len(self.columns) > 0 else '',
+                symbol='',
+                source='',
+                start_date=self.index[0] if len(self.index) > 0 else datetime.now(),
+                end_date=self.index[-1] if len(self.index) > 0 else datetime.now(),
+                frequency='',
+                currency='',
+                additional_info={}
+            )
+        
+        # Store metadata
+        self._ts_metadata = metadata
+    
+    def _validate_and_process(self, data):
+        """Validate and process the time series data."""
+        # Ensure datetime index
         if not isinstance(data.index, pd.DatetimeIndex):
             try:
                 data.index = pd.to_datetime(data.index)
-            except:
-                logger.error("Data must have a DatetimeIndex")
+                logger.debug("Converted index to DatetimeIndex")
+            except Exception as e:
+                logger.error(f"Failed to convert index to DatetimeIndex: {e}")
                 raise ValueError("Data must have a DatetimeIndex")
         
-        if isinstance(data, pd.DataFrame) and len(data.columns) > 1:
-            logger.error("Data must have only one column, please use MultiTimeSeries for multiple columns")
-            raise ValueError("Data must have only one column, please use MultiTimeSeries for multiple columns")
-
-        if isinstance(data, pd.Series):
-            logger.debug("Converting Series to DataFrame")
-            self.metadata.name = self.data.name
-            self.data = data.to_frame()
-        else:
-            self.metadata.name = self.data.columns[0]
-
+        # Check for single column constraint (only for base TimeSeries)
+        if self.__class__.__name__ == 'TimeSeries' and len(data.columns) > 1:
+            logger.error("Base TimeSeries must have only one column, use MultiTimeSeries for multiple columns")
+            raise ValueError("Base TimeSeries must have only one column, use MultiTimeSeries for multiple columns")
+        
         # Sort index if not already sorted
         if not data.index.is_monotonic_increasing and not data.index.is_monotonic_decreasing:
-            logger.debug("Sorting index as it's not monotonic increasing or decreasing")
-            self.data = data.sort_index()
-                
+            logger.debug("Sorting index as it's not monotonic")
+            data.sort_index(inplace=True)
+    
+    @property
+    def _constructor(self):
+        """Return the constructor for this class (used by pandas operations)."""
+        return type(self)
+    
+    @property  
+    def _constructor_sliced(self):
+        """Return the constructor for sliced objects (typically Series)."""
+        return pd.Series
+    
+    def __finalize__(self, other, method=None, **kwargs):
+        """
+        Propagate metadata from other to self.
+        This method is called at the end of most pandas operations.
+        """
+        result = super().__finalize__(other, method, **kwargs)
+        if isinstance(other, TimeSeries) and hasattr(other, '_ts_metadata'):
+            object.__setattr__(result, '_ts_metadata', other._ts_metadata)
+        return result
+    
+    @property
+    def metadata(self) -> TimeSeriesMetadata:
+        """Get the metadata of the time series."""
+        return self._ts_metadata
+    
+    @metadata.setter
+    def metadata(self, value: TimeSeriesMetadata):
+        """Set the metadata of the time series."""
+        self._ts_metadata = value
+    
     @property
     def start_date(self) -> datetime:
         """Get the start date of the time series."""
-        return self.data.index[0]
+        return self.index[0] if len(self.index) > 0 else None
     
     @property
     def end_date(self) -> datetime:
         """Get the end date of the time series."""
-        return self.data.index[-1]
+        return self.index[-1] if len(self.index) > 0 else None
     
     @property
     def frequency(self) -> str:
         """Get the frequency of the time series."""
-        return self.metadata.frequency
+        return self._ts_metadata.frequency if self._ts_metadata else None
     
-    def resample(self, freq: str) -> 'TimeSeries':
+    def resample_ts(self, freq: str) -> 'TimeSeries':
         """
         Resample the time series to a different frequency.
         
@@ -91,23 +155,36 @@ class TimeSeries:
         Returns:
             New TimeSeries object with resampled data
         """
-        resampled_data = self.data.resample(freq).agg({
-            'open': 'first',
-            'high': 'max',
-            'low': 'min',
-            'close': 'last',
-            'volume': 'sum' if 'volume' in self.data.columns else None
-        }).dropna()
+        # Define aggregation rules for common OHLCV columns
+        agg_rules = {}
+        for col in self.columns:
+            col_lower = col.lower()
+            if 'open' in col_lower:
+                agg_rules[col] = 'first'
+            elif 'high' in col_lower:
+                agg_rules[col] = 'max'
+            elif 'low' in col_lower:
+                agg_rules[col] = 'min'
+            elif 'close' in col_lower or 'price' in col_lower:
+                agg_rules[col] = 'last'
+            elif 'volume' in col_lower:
+                agg_rules[col] = 'sum'
+            else:
+                agg_rules[col] = 'last'  # Default to last value
+        
+        resampled_data = self.resample(freq).agg(agg_rules).dropna()
         
         # Create new metadata with updated frequency
         new_metadata = TimeSeriesMetadata(
-            symbol=self.metadata.symbol,
-            source=self.metadata.source,
+            name=self._ts_metadata.name,
+            symbol=self._ts_metadata.symbol,
+            source=self._ts_metadata.source,
             start_date=resampled_data.index[0],
             end_date=resampled_data.index[-1],
             frequency=freq,
-            currency=self.metadata.currency,
-            additional_info=self.metadata.additional_info
+            currency=self._ts_metadata.currency,
+            additional_info=self._ts_metadata.additional_info,
+            is_returns=self._ts_metadata.is_returns
         )
         
         return TimeSeries(resampled_data, new_metadata)
@@ -124,73 +201,89 @@ class TimeSeries:
             TimeSeries object with returns data
         """
         if method not in ['log', 'simple', 'absolute']:
-            logger.error(f"Invalid method: {method}. Must be either 'log' or 'simple'")
-            raise ValueError("Method must be either 'log' or 'simple'")
-            
+            logger.error(f"Invalid method: {method}. Must be 'log', 'simple', or 'absolute'")
+            raise ValueError("Method must be 'log', 'simple', or 'absolute'")
+        
+        if self._ts_metadata.is_returns:
+            logger.warning("Time series is already returns, calculating returns on returns")
+        
         if method == 'log':
-            returns_df = np.log(self.data / self.data.shift(1))
+            returns_df = np.log(self / self.shift(1))
             logger.debug("Calculated log returns")
         elif method == 'simple':
-            returns_df = self.data.pct_change()
+            returns_df = self.pct_change()
             logger.debug("Calculated simple returns")
         elif method == 'absolute':
-            returns_df = self.data.diff()
+            returns_df = self.diff()
             logger.debug("Calculated absolute returns")
         
         if intraday_only:
             logger.debug("Dropping first record of each day")
             # Group by date and drop first record of each day
-            returns_df = returns_df.groupby(returns_df.index.date).apply(lambda x: x.iloc[1:]).reset_index(level=0, drop=True)
-            
+            returns_df = returns_df.groupby(returns_df.index.date).apply(lambda x: x.iloc[1:])
+            if isinstance(returns_df.index, pd.MultiIndex):
+                returns_df.index = returns_df.index.droplevel(0)
+        
+        # Create new metadata for returns
         returns_metadata = TimeSeriesMetadata(
-            name=self.metadata.name + '_returns',
-            symbol=self.metadata.symbol + '_returns' if self.metadata != None else None,
-            source=self.metadata.source if self.metadata != None else None,
-            start_date=returns_df.index[0],
-            end_date=returns_df.index[-1],
+            name=self._ts_metadata.name + '_returns',
+            symbol=self._ts_metadata.symbol + '_returns' if self._ts_metadata.symbol else '',
+            source=self._ts_metadata.source,
+            start_date=returns_df.index[0] if len(returns_df.index) > 0 else datetime.now(),
+            end_date=returns_df.index[-1] if len(returns_df.index) > 0 else datetime.now(),
             is_returns=True,
-            frequency=self.metadata.frequency if self.metadata != None else None,
-            currency=self.metadata.currency if self.metadata != None else None,
-            additional_info=self.metadata.additional_info if self.metadata != None else {}
+            frequency=self._ts_metadata.frequency,
+            currency=self._ts_metadata.currency,
+            additional_info=self._ts_metadata.additional_info
         )
         
         return TimeSeries(returns_df, returns_metadata)
-
-    def value(self, index: int) -> float:
+    
+    def value(self, index: int) -> Union[float, pd.Series]:
         """
         Get the value of the time series at a specific index.
+        
+        Args:
+            index: Integer index position
+            
+        Returns:
+            Value(s) at the specified index
         """
-        return self.data.iloc[index]
+        return self.iloc[index]
     
-    def rolling(self, window: int, stats: List[str] = ['mean', 'std', 'min', 'max'], min_periods: Optional[int] = None) -> pd.DataFrame:
+    def rolling_stats(self, window: int, stats: List[str] = ['mean', 'std', 'min', 'max'], 
+                     min_periods: Optional[int] = None) -> pd.DataFrame:
         """
         Calculate rolling statistics for the time series.
         
         Args:
             window: Size of the rolling window
-            stats: List of statistics to calculate available stats: ['mean', 'std', 'min', 'max', 'skew', 'kurt', 'sum', 'count', 'median', 'var', 'quantiles']
+            stats: List of statistics to calculate
             min_periods: Minimum number of observations required
             
         Returns:
-            New TimeSeries object with rolling statistics
+            DataFrame containing rolling statistics
         """
         if min_periods is None:
             min_periods = window
-            
-        rolling_data = pd.DataFrame()
-
-        for col in self.data.columns:
+        
+        rolling_data = pd.DataFrame(index=self.index)
+        
+        for col in self.columns:
             for stat in stats:
                 if stat == 'quantiles':
                     for q in [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99]:
-                        rolling_data[f'{col}_quantile_{q}'] = self.data.rolling(window, min_periods=min_periods)[col].quantile(q)
+                        rolling_data[f'{col}_quantile_{q}'] = self[col].rolling(
+                            window, min_periods=min_periods).quantile(q)
                 elif stat in ['mean', 'std', 'min', 'max', 'skew', 'kurt', 'sum', 'count', 'median', 'var']:
-                    rolling_data[f'{col}_{stat}'] = self.data.rolling(window, min_periods=min_periods)[col].agg(stat)
+                    rolling_data[f'{col}_{stat}'] = getattr(
+                        self[col].rolling(window, min_periods=min_periods), stat)()
                 else:
                     raise ValueError(f"Invalid statistic: {stat}")
+        
         return rolling_data
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict_ts(self) -> Dict[str, Any]:
         """
         Convert the time series to a dictionary representation.
         
@@ -198,21 +291,22 @@ class TimeSeries:
             Dictionary containing the time series data and metadata
         """
         return {
-            'data': self.data.to_dict(),
+            'data': self.to_dict(),
             'metadata': {
-                'name': self.metadata.name,
-                'symbol': self.metadata.symbol,
-                'source': self.metadata.source,
-                'start_date': self.metadata.start_date.isoformat(),
-                'end_date': self.metadata.end_date.isoformat(),
-                'frequency': self.metadata.frequency,
-                'currency': self.metadata.currency,
-                'additional_info': self.metadata.additional_info
+                'name': self._ts_metadata.name,
+                'symbol': self._ts_metadata.symbol,
+                'source': self._ts_metadata.source,
+                'start_date': self._ts_metadata.start_date.isoformat() if self._ts_metadata.start_date else None,
+                'end_date': self._ts_metadata.end_date.isoformat() if self._ts_metadata.end_date else None,
+                'frequency': self._ts_metadata.frequency,
+                'currency': self._ts_metadata.currency,
+                'additional_info': self._ts_metadata.additional_info,
+                'is_returns': self._ts_metadata.is_returns
             }
         }
     
     @classmethod
-    def from_dict(cls, data_dict: Dict[str, Any]) -> 'TimeSeries':
+    def from_dict_ts(cls, data_dict: Dict[str, Any]) -> 'TimeSeries':
         """
         Create a TimeSeries object from a dictionary representation.
         
@@ -227,44 +321,50 @@ class TimeSeries:
         data.index = pd.to_datetime(data.index)
         
         # Create metadata
+        metadata_dict = data_dict['metadata']
         metadata = TimeSeriesMetadata(
-            symbol=data_dict['metadata']['symbol'],
-            source=data_dict['metadata']['source'],
-            start_date=datetime.fromisoformat(data_dict['metadata']['start_date']),
-            end_date=datetime.fromisoformat(data_dict['metadata']['end_date']),
-            frequency=data_dict['metadata']['frequency'],
-            currency=data_dict['metadata']['currency'],
-            additional_info=data_dict['metadata']['additional_info']
+            name=metadata_dict['name'],
+            symbol=metadata_dict['symbol'],
+            source=metadata_dict['source'],
+            start_date=datetime.fromisoformat(metadata_dict['start_date']) if metadata_dict['start_date'] else None,
+            end_date=datetime.fromisoformat(metadata_dict['end_date']) if metadata_dict['end_date'] else None,
+            frequency=metadata_dict['frequency'],
+            currency=metadata_dict['currency'],
+            additional_info=metadata_dict['additional_info'],
+            is_returns=metadata_dict.get('is_returns', False)
         )
         
         return cls(data, metadata)
     
-    def __repr__(self) -> str:
-        """String representation of the TimeSeries object."""
-        if (self.metadata != None):
-            return (f"TimeSeries(symbol='{self.metadata.symbol}', "
-                    f"name='{self.metadata.name}', "
-                    f"source='{self.metadata.source}', "
-                    f"start_date='{self.start_date}', "
-                    f"end_date='{self.end_date}', "
-                    f"frequency='{self.frequency}')")
-        else:
-            return (f"TimeSeries(data={self.data}, "
-                    f"metadata={self.metadata})")
-
-    def cum_returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def cum_returns(self, intraday_only: bool = False, method: str = 'simple') -> pd.DataFrame:
         """
         Calculate the cumulative returns of the time series.
+        
+        Args:
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            DataFrame with cumulative returns
         """
         returns = self.returns(intraday_only, method)
-        return returns.data.add(1).cumprod() - 1
+        return (returns + 1).cumprod() - 1
     
-    def volatility(self, intraday_only: bool = False, method: str = 'simple', annualized: bool = True) -> pd.Series:
+    def volatility(self, intraday_only: bool = False, method: str = 'simple', 
+                  annualized: bool = True) -> pd.Series:
         """
         Calculate the volatility of the time series.
+        
+        Args:
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            annualized: Whether to annualize the volatility
+            
+        Returns:
+            Series with volatility values
         """
         returns = self.returns(intraday_only, method)
-        volatility = returns.data.std()
+        volatility = returns.std()
         if annualized:
             return volatility * np.sqrt(252)
         else:
@@ -273,26 +373,49 @@ class TimeSeries:
     def mean_return(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the mean return of the time series.
+        
+        Args:
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with mean return values
         """
         returns = self.returns(intraday_only, method)
-        return returns.data.mean()
+        return returns.mean()
     
     def sharpe_ratio(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Sharpe ratio of the time series.
+        
+        Args:
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with Sharpe ratio values
         """
         returns = self.returns(intraday_only, method)
-        return (returns.data.mean() / returns.data.std()) * np.sqrt(252)
+        return (returns.mean() / returns.std()) * np.sqrt(252)
     
-    def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def max_drawdown(self, percentage: bool = True, intraday_only: bool = False, 
+                    method: str = 'simple') -> pd.Series:
         """
         Calculate the maximum drawdown of the time series.
+        
+        Args:
+            percentage: Whether to use percentage returns or absolute values
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with maximum drawdown values
         """
-        # Calculate cumulative returns
         if percentage:
             cum_rets = self.cum_returns(intraday_only, method)
         else:
-            cum_rets = self.data
+            cum_rets = self.copy()
+        
         # Calculate running maximum
         running_max = cum_rets.expanding().max()
         # Calculate drawdown
@@ -300,112 +423,156 @@ class TimeSeries:
         # Get the maximum drawdown
         return drawdown.min()
     
-    def generate_bootraped_timeseries(self, simulations: int = 1000, intraday_only: bool = False, method: str = 'simple') -> List['TimeSeries']:
+    def generate_bootstrapped_timeseries(self, simulations: int = 1000, intraday_only: bool = False, 
+                                       method: str = 'simple') -> List['TimeSeries']:
         """
-        Generates a bootstrapped time series.
+        Generate bootstrapped time series.
+        
+        Args:
+            simulations: Number of simulations to run
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            List of bootstrapped TimeSeries objects
         """
-        if self.metadata.is_returns:
-            returns = self
+        if self._ts_metadata.is_returns:
+            returns = self.copy()
         else:
             returns = self.returns(intraday_only, method)
-
-        returns.data.fillna(0, inplace = True)
-
-        shuffled_timeseries = []
-
-        for i in range(simulations):
-            shuffled = np.random.permutation(returns.data)
-            shuffled = shuffled.cumsum()
-            ts = TimeSeries(
-                pd.DataFrame({'values': shuffled}, index=returns.data.index), 
-                metadata=None
-            )
-            shuffled_timeseries.append(ts)
-        return shuffled_timeseries
         
+        returns = returns.fillna(0)
+        shuffled_timeseries = []
+        
+        for i in range(simulations):
+            shuffled_data = pd.DataFrame(index=returns.index)
+            for col in returns.columns:
+                shuffled = np.random.permutation(returns[col].values)
+                shuffled_data[col] = np.cumsum(shuffled)
+            
+            ts = TimeSeries(shuffled_data, metadata=None)
+            shuffled_timeseries.append(ts)
+        
+        return shuffled_timeseries
     
-    def value_at_risk(self, percentage: bool = True, confidence_level: float = 0.05, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def value_at_risk(self, percentage: bool = True, confidence_level: float = 0.05, 
+                     intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the Value at Risk (VaR) of the time series.
+        
+        Args:
+            percentage: Whether to use percentage returns or absolute changes
+            confidence_level: Confidence level for VaR calculation
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with VaR values
         """
         if percentage:
-            return self.returns(intraday_only, method).data.quantile(confidence_level)
+            return self.returns(intraday_only, method).quantile(confidence_level)
         else:
-            return self.data.diff().quantile(confidence_level)
+            return self.diff().quantile(confidence_level)
     
     def skewness(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the skewness of the time series.
+        
+        Args:
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with skewness values
         """
-        return self.returns(intraday_only, method).data.skew()
+        return self.returns(intraday_only, method).skew()
     
     def kurtosis(self, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
         """
         Calculate the kurtosis of the time series.
+        
+        Args:
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with kurtosis values
         """
-        return self.returns(intraday_only, method).data.kurt()
+        return self.returns(intraday_only, method).kurt()
     
-    def autocorrelation(self, lag: int = 1, intraday_only: bool = False, method: str = 'simple') -> pd.Series:
+    def autocorrelation(self, lag: int = 1, intraday_only: bool = False, 
+                       method: str = 'simple') -> pd.Series:
         """
         Calculate the autocorrelation of the time series.
+        
+        Args:
+            lag: Number of periods to lag
+            intraday_only: Whether to use intraday only returns
+            method: Return calculation method
+            
+        Returns:
+            Series with autocorrelation values
         """
-        returns_df = self.returns(intraday_only, method).data
-        acorr_map = {}
+        returns_df = self.returns(intraday_only, method)
+        acorr_result = {}
         for col in returns_df.columns:
-            acorr_map[col] = returns_df[col].autocorr(lag)
-        return pd.Series(acorr_map)
-
-    def slice(self, n: float, is_percentage: bool = True) -> Tuple['TimeSeries']:
+            acorr_result[col] = returns_df[col].autocorr(lag)
+        return pd.Series(acorr_result)
+    
+    def slice(self, n: Union[int, float], is_percentage: bool = True) -> Tuple['TimeSeries', 'TimeSeries']:
         """
-        Slice the time series.
+        Slice the time series into two parts.
+        
+        Args:
+            n: Split point (percentage if is_percentage=True, otherwise row count)
+            is_percentage: Whether n represents a percentage
+            
+        Returns:
+            Tuple of two TimeSeries objects
         """
+        if is_percentage:
+            split_idx = int(n * len(self))
+        else:
+            split_idx = int(n)
+        
         #cmon, this type(self) stuff is nice
         if is_percentage:
-            return (type(self)(self.data.iloc[:int(n * len(self.data))]), type(self)(self.data.iloc[int(n * len(self.data)):]))
+            return (type(self)(self.iloc[:split_idx]), type(self)(self.iloc[split_idx:]))
         else:
-            return (type(self)(self.data.iloc[:n]), type(self)(self.data.iloc[n:]))
+            return (type(self)(self.iloc[:split_idx]), type(self)(self.iloc[split_idx:]))
+        
     
-    def __add__(self, other):
+    @classmethod
+    def read_parquet(cls, path: str) -> 'TimeSeries':
         """
-        Overload the + operator for TimeSeries.
+        Read a TimeSeries object from a parquet file.
         """
-        if isinstance(other, type(self)):
-            new_data = self.data.add(other.data, fill_value=0)
-        else:
-            new_data = self.data + other
-        return type(self)(new_data)
-
-    def __sub__(self, other):
-        """
-        Overload the - operator for TimeSeries.
-        """
-        if isinstance(other, type(self)):
-            new_data = self.data.sub(other.data, fill_value=0)
-        else:
-            new_data = self.data - other
-        return type(self)(new_data)
-
-    def __mul__(self, other):
-        """
-        Overload the * operator for TimeSeries.
-        """
-        if isinstance(other, type(self)):
-            new_data = self.data.mul(other.data, fill_value=1)
-        else:
-            new_data = self.data * other
-        return type(self)(new_data)
-
-    def __truediv__(self, other):
-        """
-        Overload the / operator for TimeSeries.
-        """
-        if isinstance(other, type(self)):
-            new_data = self.data.div(other.data, fill_value=1)
-        else:
-            new_data = self.data / other
-        return type(self)(new_data)
+        return cls(pd.read_parquet(path))
     
+    @classmethod
+    def read_csv(cls, path: str) -> 'TimeSeries':
+        """
+        Read a TimeSeries object from a csv file.
+        """
+        return cls(pd.read_csv(path))
     
+    @classmethod
+    def read_excel(cls, path: str) -> 'TimeSeries':
+        """
+        Read a TimeSeries object from a excel file.
+        """
+        return cls(pd.read_excel(path))
     
+    @classmethod
+    def read_json(cls, path: str) -> 'TimeSeries':
+        """
+        Read a TimeSeries object from a json file.
+        """
+        return cls(pd.read_json(path))
     
-    
+    @classmethod
+    def read_html(cls, path: str) -> 'TimeSeries':
+        """
+        Read a TimeSeries object from a html file.
+        """
+        return cls(pd.read_html(path))
