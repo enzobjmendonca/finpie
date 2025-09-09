@@ -1,4 +1,5 @@
 from typing import List, Dict, Any, Optional, Union, Tuple
+from typing_extensions import dataclass_transform
 import pandas as pd
 import numpy as np
 import logging
@@ -23,12 +24,12 @@ class MultiTimeSeries(TimeSeries):
     """
     _metadata = ['_individual_timeseries']
     
-    def __init__(self, timeseries: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame], 
+    def __init__(self, data: Union[List[TimeSeries], List[pd.DataFrame], List[pd.Series], pd.DataFrame], 
                  is_returns: bool = False, metadata: TimeSeriesMetadata = None, **kwargs):
         """Initialize a MultiTimeSeries object.
         
         Args:
-            timeseries: Can be one of:
+            data: Can be one of:
                 - List of TimeSeries objects
                 - List of pandas DataFrames
                 - List of pandas Series
@@ -41,23 +42,23 @@ class MultiTimeSeries(TimeSeries):
         """
         # Store individual timeseries list temporarily
         _individual_timeseries = None
-        
         # Handle different input types
-        if isinstance(timeseries, pd.DataFrame): 
+        if isinstance(data, pd.DataFrame): 
             # Single DataFrame - treat as multi-column time series
-            combined_data = timeseries
-        
-        elif isinstance(timeseries, list):
+            combined_data = data
+        elif isinstance(data, dict):
+            combined_data = pd.DataFrame(data)
+        elif isinstance(data, list):
             _individual_timeseries = []
-            if not timeseries:
+            if not data:
                 raise ValueError("At least one TimeSeries must be provided")
             
-            if all(isinstance(ts, TimeSeries) for ts in timeseries):
+            if all(isinstance(ts, TimeSeries) for ts in data):
                 # List of TimeSeries objects
-                _individual_timeseries = timeseries
-            elif all(isinstance(ts, (pd.DataFrame, pd.Series)) for ts in timeseries):
+                _individual_timeseries = data
+            elif all(isinstance(ts, (pd.DataFrame, pd.Series)) for ts in data):
                 # List of DataFrames or Series
-                for i, ts in enumerate(timeseries):
+                for i, ts in enumerate(dataclass_transform):
                     if isinstance(ts, pd.Series):
                         ts_name = ts.name if ts.name else f'series_{i}'
                         ts = ts.to_frame()
@@ -192,35 +193,42 @@ class MultiTimeSeries(TimeSeries):
                     names.append(ts.metadata.name)
                 if ts.metadata.source:
                     sources.append(ts.metadata.source)
-        
-        return TimeSeriesMetadata(
-            symbol=",".join(symbols) if symbols else "",
-            name=",".join(names) if names else "",
-            source="combined",
-            start_date=self.index[0] if len(self.index) > 0 else None,
-            end_date=self.index[-1] if len(self.index) > 0 else None,
-            frequency=self._individual_timeseries[0].metadata.frequency if self._individual_timeseries and self._individual_timeseries[0].metadata else None,
-            currency=self._individual_timeseries[0].metadata.currency if self._individual_timeseries and self._individual_timeseries[0].metadata else None,
-            additional_info={
-                'num_series': len(self._individual_timeseries),
-                'symbols': symbols,
-                'sources': list(set(sources))
-            }
-        )
+        try:
+            ts_metadata = TimeSeriesMetadata(
+                symbol=",".join(symbols) if symbols else "",
+                name=",".join(names) if names else "",
+                source="combined",
+                start_date=self.index[0] if len(self.index) > 0 else None,
+                end_date=self.index[-1] if len(self.index) > 0 else None,
+                frequency=self._individual_timeseries[0].metadata.frequency if self._individual_timeseries and self._individual_timeseries[0].metadata else None,
+                currency=self._individual_timeseries[0].metadata.currency if self._individual_timeseries and self._individual_timeseries[0].metadata else None,
+                additional_info={
+                    'num_series': len(self._individual_timeseries),
+                    'symbols': symbols,
+                    'sources': list(set(sources))
+                }
+            )
+        except:
+            ts_metadata = TimeSeriesMetadata(name='', symbol='', source='', start_date=None, end_date=None, frequency='', currency='', additional_info={})
+        return ts_metadata
     
     @staticmethod
     def _create_metadata_static(combined_data: pd.DataFrame) -> TimeSeriesMetadata:
-        """Create metadata for the combined time series."""        
-        return TimeSeriesMetadata(
-            symbol=",".join(combined_data.columns),
-            name=",".join(combined_data.columns),
-            source="combined",
-            start_date=combined_data.index[0] if len(combined_data.index) > 0 else None,
-            end_date=combined_data.index[-1] if len(combined_data.index) > 0 else None,
-            frequency='',
-            currency='',
-            additional_info={}
-        )
+        """Create metadata for the combined time series.""" 
+        try:
+            ts_metadata = TimeSeriesMetadata(
+                symbol=",".join(combined_data.columns),
+                name=",".join(combined_data.columns),
+                source="combined",
+                start_date=combined_data.index[0] if len(combined_data.index) > 0 else None,
+                end_date=combined_data.index[-1] if len(combined_data.index) > 0 else None,
+                frequency='',
+                currency='',
+                additional_info={}
+            )
+        except:
+            ts_metadata = TimeSeriesMetadata(name='', symbol='', source='', start_date=None, end_date=None, frequency='', currency='', additional_info={})
+        return ts_metadata
     
     def correlation(self, returns: bool = True, method: str = 'pearson', 
                    min_periods: Optional[int] = None) -> pd.DataFrame:
@@ -348,8 +356,7 @@ class MultiTimeSeries(TimeSeries):
             additional_info={
                 'is_shares': shares,
                 'weights': weights,
-                'constituents': list(weights.keys()),
-                'calculation_method': method if percentage else 'absolute'
+                'constituents': list(weights.keys())
             }
         )
         
