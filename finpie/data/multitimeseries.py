@@ -83,7 +83,7 @@ class MultiTimeSeries(TimeSeries):
             # Align and combine all series
             combined_data = self._align_series_static(_individual_timeseries, is_returns)
         else:
-            raise ValueError("Input must be either a pandas DataFrame or a list of TimeSeries/DataFrame objects")
+            combined_data = data
         
         # Create combined metadata
         if metadata is None:

@@ -62,7 +62,7 @@ class TimeSeries(pd.DataFrame):
             df_kwargs['copy'] = copy
 
         # Validate and process data
-        self._validate_and_process(data)
+        self._validate_and_process(data, index)
 
         super().__init__(data=data, index=index, columns=columns, **df_kwargs)
         
@@ -82,10 +82,10 @@ class TimeSeries(pd.DataFrame):
         # Store metadata
         self._ts_metadata = metadata
     
-    def _validate_and_process(self, data):
+    def _validate_and_process(self, data, index):
         """Validate and process the time series data."""
         # Ensure datetime index
-        if not isinstance(data.index, pd.DatetimeIndex):
+        if index is None and not isinstance(data.index, pd.DatetimeIndex):
             try:
                 data.index = pd.to_datetime(data.index)
                 logger.debug("Converted index to DatetimeIndex")
@@ -98,8 +98,10 @@ class TimeSeries(pd.DataFrame):
             logger.error("Base TimeSeries must have only one column, use MultiTimeSeries for multiple columns")
             raise ValueError("Base TimeSeries must have only one column, use MultiTimeSeries for multiple columns")
         
+        if index is None:
+            index = data.index
         # Sort index if not already sorted
-        if not data.index.is_monotonic_increasing and not data.index.is_monotonic_decreasing:
+        if not index.is_monotonic_increasing and not index.is_monotonic_decreasing:
             logger.debug("Sorting index as it's not monotonic")
             data.sort_index(inplace=True)
     
