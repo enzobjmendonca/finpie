@@ -103,7 +103,8 @@ class TimeSeries(pd.DataFrame):
         # Sort index if not already sorted
         if not index.is_monotonic_increasing and not index.is_monotonic_decreasing:
             logger.debug("Sorting index as it's not monotonic")
-            data.sort_index(inplace=True)
+            if isinstance(data, pd.DataFrame):
+                data.sort_index(inplace=True)
     
     @property
     def _constructor(self):

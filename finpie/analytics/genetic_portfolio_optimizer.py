@@ -294,12 +294,12 @@ class FitnessEvaluator:
         try:
             # Calculate portfolio performance
             weights = individual.get_weights()
-            portfolio_ts = self.mts.portfolio(weights=weights, shares=True, percentage=False)
+            portfolio_ts = self.mts.portfolio(weights=weights, shares=True)
             portfolio_data = portfolio_ts
 
             # Calculate metrics
             pnl = float(portfolio_data.iloc[-1].iloc[0])
-            max_dd = float(portfolio_ts.max_drawdown(percentage=False).iloc[0])
+            max_dd = float(portfolio_ts.max_drawdown().iloc[0])
             sharpe = float(portfolio_ts.sharpe_ratio(method='absolute').iloc[0])
             
             # Calculate additional metrics
