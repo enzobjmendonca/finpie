@@ -27,8 +27,7 @@ env/
 ENV/
 
 #Local project
-finpie/local/data/
-finpie/local/*.parquet
+finpie/local/
 
 # IDE
 .idea/
