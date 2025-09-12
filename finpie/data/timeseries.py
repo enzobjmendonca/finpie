@@ -45,12 +45,15 @@ class TimeSeries(pd.DataFrame):
             columns: Column labels to use for resulting frame
             **kwargs: Additional arguments passed to pandas DataFrame constructor
         """
+        if isinstance(data, list):
+            data = data[0]
+            
         # Handle different input types
         if isinstance(data, pd.Series):
             # Convert Series to DataFrame
             logger.debug("Converting Series to DataFrame")
             if data.name is None:
-                data.name = 'close'
+                data.name = 'value'
             data = data.to_frame()
         
         if isinstance(data, dict):
@@ -293,13 +296,29 @@ class TimeSeries(pd.DataFrame):
                     for q in [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99]:
                         rolling_data[f'{col}_quantile_{q}'] = self[col].rolling(
                             window, min_periods=min_periods).quantile(q)
-                elif stat in ['mean', 'std', 'min', 'max', 'skew', 'kurt', 'sum', 'count', 'median', 'var']:
+                elif stat in ['mean', 'std', 'min', 'max', 'skew', 'kurt', 'sum', 'count', 'median', 'var', 'last']:
                     rolling_data[f'{col}_{stat}'] = getattr(
                         self[col].rolling(window, min_periods=min_periods), stat)()
                 else:
                     raise ValueError(f"Invalid statistic: {stat}")
         
         return rolling_data
+    
+    def update(self, data: 'TimeSeries') -> 'TimeSeries':
+        """
+        Update the time series with new data.
+        """
+        for index, row in data.iterrows():
+            self.loc[index] = row
+    
+    def z_score(self, window: int = 60) -> 'TimeSeries':
+        """
+        Calculate the z-score of the time series.
+        """
+        rolling_mean = self.rolling(window=window).mean()
+        rolling_std = self.rolling(window=window).std()
+        z_score = (self - rolling_mean) / rolling_std
+        return self.__class__(z_score, metadata=self._ts_metadata)
     
     def to_dict_ts(self) -> Dict[str, Any]:
         """

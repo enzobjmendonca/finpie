@@ -58,7 +58,7 @@ class MultiTimeSeries(TimeSeries):
                 _individual_timeseries = data
             elif all(isinstance(ts, (pd.DataFrame, pd.Series)) for ts in data):
                 # List of DataFrames or Series
-                for i, ts in enumerate(dataclass_transform):
+                for i, ts in enumerate(data):
                     if isinstance(ts, pd.Series):
                         ts_name = ts.name if ts.name else f'series_{i}'
                         ts = ts.to_frame()

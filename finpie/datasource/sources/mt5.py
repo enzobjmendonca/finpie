@@ -7,6 +7,7 @@ import warnings
 
 from finpie.datasource.sources.base import DataSource
 from finpie.data.timeseries import TimeSeries, TimeSeriesMetadata
+from finpie.data.multitimeseries import MultiTimeSeries
 
 # Only import MT5 on Windows
 if platform.system() == 'Windows':
@@ -117,7 +118,7 @@ class MT5Source(DataSource):
         """
         timeframe = self._convert_timeframe(frequency)
 
-        payload_size = self.calc_estimated_payload_size(symbol, start_date, end_date, interval)
+        payload_size = self.calc_estimated_payload_size(symbol, start_date, end_date, frequency)
         if payload_size > MAX_PAYLOAD_SIZE:
             # Split the date range into daily chunks to avoid payload size limit
             all_data = []
@@ -132,15 +133,6 @@ class MT5Source(DataSource):
             df = pd.concat(all_data)
         else:    
             df = self.get_rate_from_range(symbol, start_date, end_date, timeframe)
-        
-        # Rename columns to match standard format
-        df.rename(columns={
-            'open': 'Open',
-            'high': 'High',
-            'low': 'Low',
-            'close': 'Close',
-            'tick_volume': 'Volume'
-        }, inplace=True)
 
         # Get symbol info
         symbol_info = mt5.symbol_info(symbol)
@@ -165,7 +157,7 @@ class MT5Source(DataSource):
             }
         )
 
-        return TimeSeries(df, metadata)
+        return MultiTimeSeries(df, metadata)
 
     def get_prices(self, symbol: str, start_date: Optional[str] = None, 
                        end_date: Optional[str] = None, interval: str = '1d',
@@ -329,7 +321,7 @@ class MT5Source(DataSource):
             'volume_max': symbol_info.volume_max
         }
 
-    def calc_estimated_payload_size(self, symbol: str, start_date: datetime, end_date: datetime, interval: str) -> int:
+    def calc_estimated_payload_size(self, symbol: str, start_date: datetime, end_date: datetime, frequency: str) -> int:
         """
         Calculate the estimated payload size for a given symbol and date range.
 
@@ -342,7 +334,7 @@ class MT5Source(DataSource):
         Returns:
             int: The estimated payload size in bytes
         """
-        interval_minutes = self._convert_timeframe(interval)
+        interval_minutes = self._convert_timeframe(frequency)
         num_days = (end_date - start_date).days
         num_rows = num_days * 24 * 60 / interval_minutes
         return num_rows # approximate size of each row in bytes
