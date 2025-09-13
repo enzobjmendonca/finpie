@@ -42,7 +42,7 @@ class MT5Source(DataSource):
         if not mt5.initialize():
             warnings.warn(f"Failed to initialize MT5: {mt5.last_error()}")
             return
-                
+        self.timeseries_cache = {}        
         self._initialized = True
 
     def __del__(self):
@@ -97,12 +97,13 @@ class MT5Source(DataSource):
         df.set_index('time', inplace=True)
         return df
 
-    def get_historical_data(
+    def get_prices(
         self,
         symbol: str,
         start_date: datetime,
         end_date: datetime,
-        frequency: str = '1d'
+        interval: str = '1d',
+        columns: List[str] = ['close']
     ) -> TimeSeries:
         """
         Fetch historical data from MT5.
@@ -111,14 +112,16 @@ class MT5Source(DataSource):
             symbol (str): The symbol to fetch data for
             start_date (datetime): Start date for the data
             end_date (datetime): End date for the data
-            frequency (str): Data frequency (e.g., '1d' for daily, '1h' for hourly)
+            interval (str): Data interval (e.g., '1d' for daily, '1h' for hourly)
 
         Returns:
             TimeSeries: The historical data with metadata
         """
-        timeframe = self._convert_timeframe(frequency)
-
-        payload_size = self.calc_estimated_payload_size(symbol, start_date, end_date, frequency)
+        timeframe = self._convert_timeframe(interval)
+        if (symbol, interval) in self.timeseries_cache:
+            if self.timeseries_cache[(symbol, interval)].index[0] <= start_date and self.timeseries_cache[(symbol, interval)].index[-1] >= end_date:
+                return self.timeseries_cache[(symbol, interval)].loc[start_date:end_date]
+        payload_size = self.calc_estimated_payload_size(symbol, start_date, end_date, interval)
         if payload_size > MAX_PAYLOAD_SIZE:
             # Split the date range into daily chunks to avoid payload size limit
             all_data = []
@@ -145,7 +148,7 @@ class MT5Source(DataSource):
             source='MetaTrader 5',
             start_date=df.index[0],
             end_date=df.index[-1],
-            frequency=frequency,
+            frequency=interval,
             currency=symbol_info.currency_base,
             additional_info={
                 'description': symbol_info.description,
@@ -157,96 +160,10 @@ class MT5Source(DataSource):
             }
         )
 
-        return MultiTimeSeries(df, metadata)
-
-    def get_prices(self, symbol: str, start_date: Optional[str] = None, 
-                       end_date: Optional[str] = None, interval: str = '1d',
-                       columns: List[str] = ['close']) -> TimeSeries:
-        """
-        Get OHLC price data from MT5.
-        
-        Args:
-            symbol: The symbol to fetch data for
-            start_date: Start date in 'YYYY-MM-DD' format
-            end_date: End date in 'YYYY-MM-DD' format
-            interval: Data interval (e.g., '1d' for daily, '1h' for hourly)
-            
-        Returns:
-            TimeSeries: The historical data with metadata
-        """
-        if not self._initialized:
-            raise RuntimeError("MT5 is not initialized")
-            
-        # Map interval to MT5 timeframe
-        timeframe_map = {
-            '1m': mt5.TIMEFRAME_M1,
-            '5m': mt5.TIMEFRAME_M5,
-            '15m': mt5.TIMEFRAME_M15,
-            '30m': mt5.TIMEFRAME_M30,
-            '1h': mt5.TIMEFRAME_H1,
-            '4h': mt5.TIMEFRAME_H4,
-            '1d': mt5.TIMEFRAME_D1,
-            '1w': mt5.TIMEFRAME_W1,
-            '1M': mt5.TIMEFRAME_MN1
-        }
-        timeframe = timeframe_map.get(interval, mt5.TIMEFRAME_D1)
-        
-        # Convert dates to datetime
-        start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else datetime(2000, 1, 1)
-        end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else datetime.now()
-        
-        payload_size = self.calc_estimated_payload_size(symbol, start_date, end_date, interval)
-        if payload_size > MAX_PAYLOAD_SIZE:
-            # Split the date range into daily chunks to avoid payload size limit
-            all_data = []
-            current_date = start_date
-            while current_date < end_date:
-                next_date = min(current_date + timedelta(days=1), end_date)
-                df = self.get_rate_from_range(symbol, current_date, next_date, timeframe)
-                all_data.append(df)
-                current_date = next_date
-                
-            # Concatenate all the daily data
-            df = pd.concat(all_data)
-        else:    
-            df = self.get_rate_from_range(symbol, start_date, end_date, timeframe)
-        
-        # Rename columns to lowercase
-        df = df.rename(columns={
-            'open': 'open',
-            'high': 'high',
-            'low': 'low',
-            'close': 'close'
-        })
-        
-        # Select only desired columns
         df = df[columns]
-        
-        # Get metadata
-        info = self.get_symbol_info(symbol)
-
-        metadata = TimeSeriesMetadata(
-            name=symbol,
-            symbol=symbol,
-            source='MetaTrader 5',
-            start_date=df.index[0],
-            end_date=df.index[-1],
-            frequency=interval,
-            currency=info.get('currency', 'USD'),
-            additional_info={
-                'name': info.get('name', symbol),
-                'type': info.get('type'),
-                'exchange': info.get('exchange'),
-                'point': info.get('point'),
-                'digits': info.get('digits'),
-                'spread': info.get('spread'),
-                'trade_contract_size': info.get('trade_contract_size'),
-                'volume_min': info.get('volume_min'),
-                'volume_max': info.get('volume_max')
-            }
-        )
-        
-        return TimeSeries(df, metadata)
+        result =  MultiTimeSeries(df, metadata)
+        self.timeseries_cache[(symbol, interval)] = result
+        return result
     
     def get_metadata(self, symbol: str) -> Dict[str, Any]:
         """
@@ -338,4 +255,17 @@ class MT5Source(DataSource):
         num_days = (end_date - start_date).days
         num_rows = num_days * 24 * 60 / interval_minutes
         return num_rows # approximate size of each row in bytes
+    
+    def get_tick_data(self, symbol: str, start_date: datetime, end_date: datetime) -> TimeSeries:
+        """
+        Get tick data from MT5.
+        """
+        if not self._initialized:
+            raise RuntimeError("MT5 is not initialized")
+        ticks = mt5.copy_ticks_from(symbol, start_date, end_date, mt5.COPY_TICKS_TRADE)
+        # create DataFrame out of the obtained data
+        ticks_frame = pd.DataFrame(ticks)
+        # convert time in seconds into the datetime format
+        ticks_frame['time']=pd.to_datetime(ticks_frame['time'], unit='s')
+        return MultiTimeSeries(ticks_frame.set_index('time'))
 

@@ -1,4 +1,5 @@
-from finpie.data.timeseries import MultiTimeSeries, TimeSeries
+from finpie.data.multitimeseries import MultiTimeSeries
+from finpie.data.timeseries import TimeSeries
 from .indicator import Indicator
 import pandas as pd
 

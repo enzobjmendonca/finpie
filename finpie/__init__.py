@@ -17,8 +17,6 @@ except ImportError:
     MT5Source = None  # MT5Source will be None if MetaTrader5 is not installed
 
 from finpie.datasource.sources.schemas.status_invest import FundamentalsParams
-from finpie.analytics.statistical import Statistical
-from finpie.analytics.technical import Technical
 from finpie.analytics.llm import LLMForecaster, MarketTokenizer
 
 __all__ = [
@@ -32,8 +30,6 @@ __all__ = [
     'StatusInvestSource',
     'MT5Source',
     'FundamentalsParams',
-    'Statistical',
-    'Technical',
     'LLMForecaster',
     'MarketTokenizer'
 ] 
