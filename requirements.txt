@@ -1,3 +1,14 @@
+# FinPie Requirements
+# 
+# IMPORTANT: For GPU acceleration with CUDA support, install PyTorch first:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# 
+# Then install remaining requirements:
+# pip install -r requirements.txt
+#
+# For CPU-only installation, use:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 numpy>=1.24.0
 pandas>=2.0.0
 scipy>=1.10.0
@@ -18,7 +29,13 @@ jupyter>=1.0.0
 notebook>=6.0.0
 ipykernel>=6.0.0
 alpha_vantage>=2.3.1
-torch>=2.1.0
+
+# Deep Learning Libraries - CUDA Support
+# Install PyTorch with CUDA support using:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+torch>=2.6.0
+torchvision>=0.21.0
+torchaudio>=2.6.0
 transformers>=4.36.0
 datasets>=2.16.0
 peft>=0.7.0
@@ -27,6 +44,8 @@ bitsandbytes>=0.41.0
 # Optional dependencies
 # MetaTrader5 is only available on Windows
 MetaTrader5>=5.0.4993; platform_system=="Windows"
+
+ta-lib>=0.6.7
 
 # Alternative data sources (optional)
 # Uncomment and install as needed based on your API subscriptions
