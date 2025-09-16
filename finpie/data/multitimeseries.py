@@ -60,11 +60,10 @@ class MultiTimeSeries(TimeSeries):
                 # List of DataFrames or Series
                 for i, ts in enumerate(data):
                     if isinstance(ts, pd.Series):
-                        ts_name = ts.name if ts.name else f'series_{i}'
+                        ts_name = ts.name if ts.name and not pd.isnull(ts.name) else f'series_{i}'
                         ts = ts.to_frame()
                     else:
                         ts_name = ts.columns[0] if len(ts.columns) > 0 else f'series_{i}'
-                    
                     ts_metadata = TimeSeriesMetadata(
                         name=ts_name,
                         symbol=ts_name,

@@ -47,12 +47,12 @@ class TimeSeries(pd.DataFrame):
         """
         if isinstance(data, list):
             data = data[0]
-            
+
         # Handle different input types
         if isinstance(data, pd.Series):
             # Convert Series to DataFrame
             logger.debug("Converting Series to DataFrame")
-            if data.name is None:
+            if data.name is None or pd.isnull(data.name):
                 data.name = 'value'
             data = data.to_frame()
         
@@ -320,6 +320,27 @@ class TimeSeries(pd.DataFrame):
         z_score = (self - rolling_mean) / rolling_std
         return self.__class__(z_score, metadata=self._ts_metadata)
     
+    def sharpe_scoring(self: 'TimeSeries', n: int):
+        """
+        Calculates a score of the temporal stability of the sharpe ratio.
+        The score is calculated as the median of the sharpe ratios of the chunks divided by the standard deviation of the sharpe ratios of the chunks.
+        Args:
+            n: Number of chunks to divide the time series into
+            
+        Returns:
+            Series with sharpe ratio values
+        """
+        if n <= 0:
+            raise ValueError("n must be positive")
+        
+        if n > len(self):
+            raise ValueError("n must be less than or equal to the length of the time series")
+        
+        chunk_size = len(self) // n
+        chunks = [self.iloc[i:i+chunk_size] for i in range(0, len(self), chunk_size)]
+        sharpe_ratios = pd.concat([chunk.sharpe_ratio() for chunk in chunks], axis=1)
+        return sharpe_ratios.median(axis=1) / sharpe_ratios.std(axis=1)
+
     def to_dict_ts(self) -> Dict[str, Any]:
         """
         Convert the time series to a dictionary representation.

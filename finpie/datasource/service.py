@@ -3,12 +3,14 @@ import pandas as pd
 from datetime import datetime
 import platform
 import warnings
-
+import json
 from finpie.datasource.sources.base import DataSource
 from finpie.datasource.sources.yahoo import YahooFinanceSource
 from finpie.datasource.sources.alpha_vantage import AlphaVantageSource
 from finpie.datasource.sources.status_invest import StatusInvestSource
 from finpie.data import TimeSeries, MultiTimeSeries
+from datetime import timedelta
+
 # Optional imports
 try:
     from finpie.datasource.sources.mt5 import MT5Source
@@ -23,6 +25,7 @@ class DataService:
     def __init__(self):
         """Initialize the data service with an empty source registry."""
         self._sources: Dict[str, DataSource] = {}
+        self.subscribed = {}
 
     def register_source(self, source: DataSource) -> None:
         """
@@ -61,7 +64,7 @@ class DataService:
 
     def get_ohlc_prices(self, symbol: str, source: str = 'yahoo_finance', 
                        start_date: Optional[str] = None, end_date: Optional[str] = None,
-                       interval: str = '1d') -> TimeSeries:
+                       interval: str = '1d', subscribed: bool = False) -> TimeSeries:
         """
         Get OHLC price data from a specific source.
 
@@ -79,11 +82,14 @@ class DataService:
             KeyError: If the source is not found
         """
         data_source = self.get_source(source)
-        return data_source.get_prices(symbol, start_date, end_date, interval, ['open', 'high', 'low', 'close'])
+        prices = data_source.get_prices(symbol, start_date, end_date, interval, ['open', 'high', 'low', 'close'])
+        if subscribed:
+            self.subscribed[(symbol, source, interval, json.dumps(['open', 'high', 'low', 'close']))] = prices
+        return prices
 
     def get_close_prices(self, symbol: str, source: str = 'yahoo_finance', 
                        start_date: Optional[str] = None, end_date: Optional[str] = None,
-                       interval: str = '1d') -> TimeSeries:
+                       interval: str = '1d', subscribed: bool = False) -> TimeSeries:
         """
         Get close price data from a specific source.
 
@@ -100,8 +106,21 @@ class DataService:
         Raises:
             KeyError: If the source is not found
         """
+        if (symbol, source, interval, json.dumps(['close'])) in self.subscribed:
+            return self.subscribed[(symbol, source, interval, json.dumps(['close']))]
+        
         data_source = self.get_source(source)
-        return data_source.get_prices(symbol, start_date, end_date, interval, ['close'])
+        prices = data_source.get_prices(symbol, start_date, end_date, interval, ['close'])
+        if subscribed:
+            self.subscribed[(symbol, source, interval, json.dumps(['close']))] = prices
+        return prices
+
+    def update_subscribed(self, time: datetime):
+        for params in self.subscribed.keys():
+            start = self.subscribed[params].index[-1]
+            end = time
+            update_data = self.get_source(params[1]).get_prices(params[0], start, end, params[2], json.loads(params[3]))
+            self.subscribed[params].update(update_data)
 
     def get_metadata(self, symbol: str, source: str = 'yahoo_finance') -> Dict[str, Any]:
         """
@@ -119,6 +138,21 @@ class DataService:
         """
         data_source = self.get_source(source)
         return data_source.get_metadata(symbol)
+    
+    def get_price(self, symbol: str, asof_time: datetime, source: str = 'yahoo_finance'):
+        if (symbol, source, '1m', json.dumps(['close'])) in self.subscribed:
+            timeseries = self.subscribed[(symbol, source, '1m', json.dumps(['close']))]
+            timeseries = timeseries[timeseries.index <= asof_time]
+            return timeseries.iloc[-1]['close']
+        else:
+            timeseries = self.get_close_prices(symbol, source=source, start_date=asof_time - timedelta(days=1), end_date=asof_time, interval='1m', subscribed=True)
+            return timeseries.iloc[-1]['close']
+
+    def get_spread(self, symbol: str):
+        if 'WIN' in symbol:
+            return 5
+        else:
+            return 0.01
 
     @classmethod
     def create_default_service(cls, alpha_vantage_key: Optional[str] = None) -> 'DataService':

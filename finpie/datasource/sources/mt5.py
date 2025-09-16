@@ -137,6 +137,9 @@ class MT5Source(DataSource):
         else:    
             df = self.get_rate_from_range(symbol, start_date, end_date, timeframe)
 
+        if df.empty:
+            return MultiTimeSeries(pd.DataFrame())
+            
         # Get symbol info
         symbol_info = mt5.symbol_info(symbol)
         if symbol_info is None:
