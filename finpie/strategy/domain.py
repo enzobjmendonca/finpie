@@ -16,7 +16,9 @@ class Domain:
         self.services[service_name] = service
 
     def get_service(self, service_name: str) -> Any:
-        return self.services[service_name]
+        if service_name in self.services:
+            return self.services[service_name]
+        return None
 
     def get_market_time(self) -> datetime:
         return self.market_time
@@ -38,12 +40,15 @@ class Domain:
         self.strategy_data.append(strategy_data)
 
     def report_eod(self, strategy_data):
+        if strategy_data.name not in self.strategy_data_history:
+            self.strategy_data_history[strategy_data.name] = []
         self.strategy_data_history[strategy_data.name].append(strategy_data)
 
     def publish_to_supabase(self):
-        #self.get_service('supabase_client').upsert_fills(self.fills)
-        self.fills = []
-        #self.get_service('supabase_client').upsert_strategy_data(self.strategy_data)
+        if self.get_service('supabase_client'):
+            self.get_service('supabase_client').upsert_fills(self.fills)
+            self.fills = []
+            self.get_service('supabase_client').upsert_strategy_data(self.strategy_data)
 
     def get_fills(self) -> list:
         return self.fills

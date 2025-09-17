@@ -37,6 +37,7 @@ class StrategyData:
     sell_notional: float = 0
     pnl: float = 0
     signal: float = 0
+    time: datetime = datetime.now()
     
     def reset(self):
         self.position = 0
@@ -101,7 +102,7 @@ class Strategy:
         fill_price = self.get_price() + self.market_data_service.get_spread(self.params.symbol)
         self.data.buy_notional += self.params.order_size * fill_price
         self.data.buy_price = self.data.buy_notional / self.data.buy_volume
-        self.domain.add_fill(Fill(uuid4(), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'buy', str(self.data.signal)))
+        self.domain.add_fill(Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'buy', str(self.data.signal)))
 
     def sell(self):
         self.data.position -= self.params.order_size
@@ -110,7 +111,7 @@ class Strategy:
         fill_price = self.get_price() - self.market_data_service.get_spread(self.params.symbol)
         self.data.sell_notional += self.params.order_size * fill_price
         self.data.sell_price = self.data.sell_notional / self.data.sell_volume
-        self.domain.add_fill(Fill(uuid4(), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'sell', str(self.data.signal)))
+        self.domain.add_fill(Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'sell', str(self.data.signal)))
     
     def calc_signal(self):
         try:
@@ -147,7 +148,7 @@ class Strategy:
 
     def stop(self, reason: str):
         if self.data.is_trading:
-            self.domain.add_fill(Fill(uuid4(), self.params.name, self.domain.get_market_time(), 
+            self.domain.add_fill(Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), 
                                 self.params.symbol, self.data.position, self.get_price(), 
                                 'buy' if self.data.position < 0 else 'sell', reason))
             self.domain.report_eod(self.data)
@@ -161,6 +162,7 @@ class Strategy:
     def update_data(self):
         self.data.pnl = self.calc_pnl()
         self.data.delta = self.data.position * self.get_price()
+        self.data.time = self.domain.get_market_time()
         
 
     def calc_pnl(self):

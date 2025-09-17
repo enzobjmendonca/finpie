@@ -44,25 +44,40 @@ class SupabaseClient:
         if len(data) > 0:
             self.client.table("strategy_params").upsert(data).execute()
 
+    def upsert_strategy_data(self, data_list: List[StrategyData]):
+        """
+        Bulk upsert StrategyData into the database.
+        Accepts datetime objects for the 'time' field and converts them to ISO format for the database.
+        """
+        data = []
+        for d in data_list:
+            d_dict = vars(d).copy()
+            if isinstance(d_dict.get("time"), datetime):
+                d_dict["time"] = d_dict["time"].isoformat()
+            data.append(d_dict)
+        if len(data) > 0:
+            self.client.table("strategy_data").upsert(data).execute()
+
     def get_strategy_data(self, name: Optional[str] = None) -> List[StrategyData]:
         """
         Fetch StrategyData from the database.
         If name is provided, fetch only the matching strategy data.
+        Converts 'time' field to datetime if it is a string.
         """
         query = self.client.table("strategy_data").select("*")
         if name:
             query = query.eq("name", name)
         response = query.execute()
         results = response.data if hasattr(response, "data") else response
-        return [StrategyData(**item) for item in results]
-
-    def upsert_strategy_data(self, data_list: List[StrategyData]):
-        """
-        Bulk upsert StrategyData into the database.
-        """
-        data = [vars(d) for d in data_list]
-        if len(data) > 0:
-            self.client.table("strategy_data").upsert(data).execute()
+        strategy_data_list = []
+        for item in results:
+            if isinstance(item.get("time"), str):
+                try:
+                    item["time"] = datetime.fromisoformat(item["time"])
+                except Exception:
+                    pass  # Leave as is if conversion fails
+            strategy_data_list.append(StrategyData(**item))
+        return strategy_data_list
 
     def get_fills(self, name: Optional[str] = None) -> List[Fill]:
         """
