@@ -96,22 +96,28 @@ class Strategy:
             self.stop("Out of Trading Window")
     
     def buy(self):
-        self.data.position += self.params.order_size
-        self.data.volume += self.params.order_size
-        self.data.buy_volume += self.params.order_size
         fill_price = self.get_price() + self.market_data_service.get_spread(self.params.symbol)
-        self.data.buy_notional += self.params.order_size * fill_price
-        self.data.buy_price = self.data.buy_notional / self.data.buy_volume
-        self.domain.add_fill(Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'buy', str(self.data.signal)))
+        fill = Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'buy', str(self.data.signal))
+        self.process_fill(fill)
 
     def sell(self):
-        self.data.position -= self.params.order_size
-        self.data.volume += self.params.order_size
-        self.data.sell_volume += self.params.order_size
         fill_price = self.get_price() - self.market_data_service.get_spread(self.params.symbol)
-        self.data.sell_notional += self.params.order_size * fill_price
-        self.data.sell_price = self.data.sell_notional / self.data.sell_volume
-        self.domain.add_fill(Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'sell', str(self.data.signal)))
+        fill = Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), self.params.symbol, self.params.order_size, fill_price, 'sell', str(self.data.signal))
+        self.process_fill(fill)
+    
+    def process_fill(self, fill: Fill):
+        self.data.position += fill.size * (1 if fill.side == 'buy' else -1)
+        self.data.volume += fill.size
+        if fill.side == 'buy':
+            self.data.buy_volume += fill.size
+            self.data.buy_notional += fill.size * fill.price
+            self.data.buy_price = self.data.buy_notional / self.data.buy_volume
+        else:
+            self.data.sell_volume += fill.size
+            self.data.sell_notional += fill.size * fill.price
+            self.data.sell_price = self.data.sell_notional / self.data.sell_volume
+        
+        self.domain.add_fill(fill)
     
     def calc_signal(self):
         try:
@@ -148,11 +154,11 @@ class Strategy:
 
     def stop(self, reason: str):
         if self.data.is_trading:
-            self.domain.add_fill(Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), 
-                                self.params.symbol, self.data.position, self.get_price(), 
-                                'buy' if self.data.position < 0 else 'sell', reason))
+            fill = Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), 
+                                self.params.symbol, abs(self.data.position), self.get_price(), 
+                                'buy' if self.data.position < 0 else 'sell', reason)
+            self.process_fill(fill)
             self.domain.report_eod(self.data)
-            self.data.reset()
             self.data.is_trading = False
 
     def start(self):
