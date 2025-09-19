@@ -51,10 +51,12 @@ class SupabaseClient:
         """
         data = []
         for d in data_list:
-            d_dict = vars(d).copy()
-            if isinstance(d_dict.get("time"), datetime):
-                d_dict["time"] = d_dict["time"].isoformat()
-            data.append(d_dict)
+            if d.has_changed:
+                d_dict = vars(d).copy()
+                if isinstance(d_dict.get("time"), datetime):
+                    d_dict["time"] = d_dict["time"].isoformat()
+                data.append(d_dict)
+                d.has_changed = False
         if len(data) > 0:
             self.client.table("strategy_data").upsert(data).execute()
 

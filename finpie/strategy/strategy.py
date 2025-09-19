@@ -38,7 +38,8 @@ class StrategyData:
     pnl: float = 0
     signal: float = 0
     time: datetime = datetime.now()
-    
+    has_changed: bool = False
+
     def reset(self):
         self.position = 0
         self.delta = 0
@@ -51,7 +52,14 @@ class StrategyData:
         self.sell_notional = 0
         self.buy_price = 0
         self.sell_price = 0
-
+    
+    def update(self, data: dict):
+        for key, value in data.items():
+            # Only update attribute if value has changed
+            if getattr(self, key, None) != value:
+                setattr(self, key, value)
+                if key != 'time':
+                    self.has_changed = True
 @dataclass
 class Fill:
     id: str
@@ -77,23 +85,30 @@ class Strategy:
         self.market_data_service = domain.get_service('market_data_service')
 
     def react(self):
-        if self.in_trading_window():
-            if not self.data.is_trading:
-                self.check_new_day()
-            if self.data.is_trading:
-                self.update_data()
-                if self.data.pnl > self.params.take_profit or self.data.pnl < self.params.stop_loss:
-                    self.stop("Take Profit or Stop Loss")
-                elif self.is_first_tick() and self.params.order_size + self.data.volume <= self.params.max_volume:
-                    self.data.signal = self.calc_signal()
-                    if self.data.signal * self.params.signal_direction >= self.params.signal_threshold and \
-                        self.data.position + self.params.order_size <= self.params.max_position:
-                        self.buy()
-                    elif self.data.signal * self.params.signal_direction <= -self.params.signal_threshold and \
-                        self.data.position - self.params.order_size >= -self.params.max_position:
-                        self.sell()
-        else:
-            self.stop("Out of Trading Window")
+        try:
+            if self.in_trading_window():
+                if not self.data.is_trading:
+                    self.check_new_day()
+                if self.data.is_trading:
+                    self.update_data()
+                    if self.data.pnl > self.params.take_profit:
+                        self.stop("Take Profit")
+                    elif self.data.pnl < self.params.stop_loss:
+                        self.stop("Stop Loss")
+                    elif self.is_first_tick() and self.params.order_size + self.data.volume <= self.params.max_volume:
+                        self.data.update({'signal': self.calc_signal()})
+                        if self.data.signal * self.params.signal_direction >= self.params.signal_threshold and \
+                            self.data.position + self.params.order_size <= self.params.max_position:
+                            self.buy()
+                        elif self.data.signal * self.params.signal_direction <= -self.params.signal_threshold and \
+                            self.data.position - self.params.order_size >= -self.params.max_position:
+                            self.sell()
+            else:
+                self.stop("Out of Trading Window")
+        except Exception as e:
+            print(self.params.name)
+            traceback.print_exc()
+            self.stop("Error in react")
     
     def buy(self):
         fill_price = self.get_price() + self.market_data_service.get_spread(self.params.symbol)
@@ -106,23 +121,24 @@ class Strategy:
         self.process_fill(fill)
     
     def process_fill(self, fill: Fill):
-        self.data.position += fill.size * (1 if fill.side == 'buy' else -1)
-        self.data.volume += fill.size
-        if fill.side == 'buy':
-            self.data.buy_volume += fill.size
-            self.data.buy_notional += fill.size * fill.price
-            self.data.buy_price = self.data.buy_notional / self.data.buy_volume
-        else:
-            self.data.sell_volume += fill.size
-            self.data.sell_notional += fill.size * fill.price
-            self.data.sell_price = self.data.sell_notional / self.data.sell_volume
-        
+        self.data.update(
+            {
+                'position': self.data.position + fill.size * (1 if fill.side == 'buy' else -1),
+                'volume': self.data.volume + fill.size,
+                'buy_volume': self.data.buy_volume + fill.size if fill.side == 'buy' else self.data.buy_volume,
+                'sell_volume': self.data.sell_volume + fill.size if fill.side == 'sell' else self.data.sell_volume,
+                'buy_notional': self.data.buy_notional + fill.size * fill.price if fill.side == 'buy' else self.data.buy_notional,
+                'sell_notional': self.data.sell_notional + fill.size * fill.price if fill.side == 'sell' else self.data.sell_notional,
+                'buy_price': self.data.buy_notional / self.data.buy_volume if self.data.buy_volume > 0 else 0,
+                'sell_price': self.data.sell_notional / self.data.sell_volume if self.data.sell_volume > 0 else 0,
+            }
+        )
         self.domain.add_fill(fill)
     
     def calc_signal(self):
         try:
             signal_series = self.signal_service.get_signal(self.params.signal_params)
-            return signal_series.iloc[-1][signal_series.columns[0]]
+            return signal_series.fillna(0).iloc[-1][signal_series.columns[0]]
         except Exception as e:
             print(self.params.name)
             traceback.print_exc()
@@ -159,16 +175,20 @@ class Strategy:
                                 'buy' if self.data.position < 0 else 'sell', reason)
             self.process_fill(fill)
             self.domain.report_eod(self.data)
-            self.data.is_trading = False
+            self.data.update({'is_trading': False})
 
     def start(self):
         self.data.reset()
-        self.data.is_trading = True
+        self.data.update({'is_trading': True})
 
     def update_data(self):
-        self.data.pnl = self.calc_pnl()
-        self.data.delta = self.data.position * self.get_price()
-        self.data.time = self.domain.get_market_time()
+        self.data.update(
+            {
+                'pnl': self.calc_pnl(),
+                'delta': self.data.position * self.get_price(),
+                'time': self.domain.get_market_time()
+            }
+        )
         
 
     def calc_pnl(self):
