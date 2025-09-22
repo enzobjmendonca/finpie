@@ -145,7 +145,7 @@ class DataService:
             timeseries = timeseries[timeseries.index <= asof_time]
             return timeseries.iloc[-1]['close']
         else:
-            timeseries = self.get_close_prices(symbol, source=source, start_date=asof_time - timedelta(days=1), end_date=asof_time, interval='1m', subscribed=True)
+            timeseries = self.get_close_prices(symbol, source=source, start_date=asof_time - timedelta(days=7), end_date=asof_time, interval='1m', subscribed=True)
             return timeseries.iloc[-1]['close']
 
     def get_spread(self, symbol: str):

@@ -83,6 +83,7 @@ class Strategy:
         self.last_day = None
         self.signal_service = domain.get_service('signal_service')
         self.market_data_service = domain.get_service('market_data_service')
+        self.signal_error_count = 0
 
     def react(self):
         try:
@@ -140,9 +141,10 @@ class Strategy:
             signal_series = self.signal_service.get_signal(self.params.signal_params)
             return signal_series.fillna(0).iloc[-1][signal_series.columns[0]]
         except Exception as e:
-            print(self.params.name)
-            traceback.print_exc()
-            self.stop("Error calculating signal")
+            self.signal_error_count += 1
+            print(f"Error calculating signal for strategy {self.params.name}, error count: {self.signal_error_count}")
+            if self.signal_error_count > 10:
+                self.stop("Error calculating signal")
             return 0
     
     def check_new_day(self):
@@ -169,6 +171,7 @@ class Strategy:
         return start_time <= current_time <= end_time
 
     def stop(self, reason: str):
+        print(f"Stopping strategy {self.params.name} because {reason}")
         if self.data.is_trading:
             fill = Fill(str(uuid4()), self.params.name, self.domain.get_market_time(), 
                                 self.params.symbol, abs(self.data.position), self.get_price(), 
@@ -178,6 +181,8 @@ class Strategy:
             self.data.update({'is_trading': False})
 
     def start(self):
+        print(f"Starting strategy {self.params.name}")
+        self.signal_error_count = 0
         self.data.reset()
         self.data.update({'is_trading': True})
 

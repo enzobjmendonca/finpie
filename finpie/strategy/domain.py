@@ -31,7 +31,14 @@ class Domain:
         self.services['market_data_service'].update_subscribed(self.market_time)
         for strategy in self.strategies.values():
             strategy.react()
-        self.publish_to_supabase()
+        # Only publish one time per minute
+        if not hasattr(self, "_last_publish_minute"):
+            self._last_publish_minute = None
+        current_minute = self.market_time.replace(second=0, microsecond=0)
+        if self._last_publish_minute != current_minute:
+            print(f"Publishing to supabase at {current_minute}")
+            self.publish_to_supabase()
+            self._last_publish_minute = current_minute
 
     def add_fill(self, fills):
         self.fills.append(fills)
