@@ -134,6 +134,7 @@ class Strategy:
                 'sell_price': self.data.sell_notional / self.data.sell_volume if self.data.sell_volume > 0 else 0,
             }
         )
+        self.data.update({'delta': self.data.position * self.get_price()})
         self.domain.add_fill(fill)
     
     def calc_signal(self):
