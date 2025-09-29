@@ -25,6 +25,7 @@ class StrategyParams:
 @dataclass
 class StrategyData:
     name: str
+    symbol: str
     is_trading: bool = False
     position: float = 0
     delta: float = 0
@@ -74,7 +75,7 @@ class Fill:
 class Strategy:
     def __init__(self, domain: Domain, params: StrategyParams):
         self.params = params
-        self.data = StrategyData(name=params.name)
+        self.data = StrategyData(name=params.name, symbol=params.symbol)
         self.domain = domain
         self.domain.add_strategy_data(self.data)
         self.start_hour, self.start_minute = map(int, self.params.start_time.split(':'))

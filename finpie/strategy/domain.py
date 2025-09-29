@@ -31,6 +31,8 @@ class Domain:
         self.services['market_data_service'].update_subscribed(self.market_time)
         for strategy in self.strategies.values():
             strategy.react()
+        # Net everything and send to market    
+        self.services['crb'].react()
         # Only publish one time per minute
         if not hasattr(self, "_last_publish_minute"):
             self._last_publish_minute = None
