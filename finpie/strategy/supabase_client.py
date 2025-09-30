@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 import pytz
 from supabase import create_client, Client
+from finpie.strategy.data import CRBData, Data
 from finpie.strategy.strategy import StrategyParams, StrategyData, Fill
 
 class SupabaseClient:
@@ -44,9 +45,9 @@ class SupabaseClient:
         if len(data) > 0:
             self.client.table("strategy_params").upsert(data).execute()
 
-    def upsert_strategy_data(self, data_list: List[StrategyData]):
+    def upsert_data(self, data_list: List[Data], table_name: str):
         """
-        Bulk upsert StrategyData into the database.
+        Bulk upsert Data into the database.
         Accepts datetime objects for the 'time' field and converts them to ISO format for the database.
         """
         data = []
@@ -58,7 +59,7 @@ class SupabaseClient:
                 data.append(d_dict)
                 d.has_changed = False
         if len(data) > 0:
-            self.client.table("strategy_data").upsert(data).execute()
+            self.client.table(table_name).upsert(data).execute()
 
     def get_strategy_data(self, name: Optional[str] = None) -> List[StrategyData]:
         """
@@ -80,6 +81,24 @@ class SupabaseClient:
                     pass  # Leave as is if conversion fails
             strategy_data_list.append(StrategyData(**item))
         return strategy_data_list
+    
+    def get_crb_data(self, name: Optional[str] = None) -> List[CRBData]:
+        """
+        Fetch CRBData from the database.
+        If name is provided, fetch only the matching crb data.
+        Converts 'time' field to datetime if it is a string.
+        """
+        query = self.client.table("crb_data").select("*")
+        if name:
+            query = query.eq("name", name)
+        response = query.execute()
+        results = response.data if hasattr(response, "data") else response
+        crb_data_list = []
+        for item in results:
+            if isinstance(item.get("time"), str):
+                item["time"] = datetime.fromisoformat(item["time"])
+            crb_data_list.append(CRBData(**item))
+        return crb_data_list
 
     def get_fills(self, name: Optional[str] = None) -> List[Fill]:
         """

@@ -3,15 +3,26 @@ from finpie.strategy.domain import Domain
 from finpie.datasource.service import DataService
 from finpie.strategy.signal_service import SignalService
 from datetime import datetime
-from finpie.strategy.strategy import Strategy, StrategyParams
+from finpie.strategy.strategy import Strategy
 from finpie.strategy.crb import CRB, CRBParams
 from finpie.strategy.supabase_client import SupabaseClient
+from finpie.strategy.data import StrategyParams
 
 class Engine:
     def __init__(self, instance_id: str, supabase_url: str, supabase_key: str):
         self.instance_id = instance_id
         self.domain = Domain()
-        self.crb = CRB(domain=self.domain, params=CRBParams(magic=2, symbol_map={'WIN$N': 'WINV25'}, multiplier=0.5))
+        self.crb = CRB(domain=self.domain, 
+                        params=CRBParams(magic=2, 
+                                         symbol_map={
+                                            'WIN$N': {
+                                                'symbol': 'WINV25', 
+                                                'multiplier': 0.5,
+                                                'contract_size': 0.2,
+                                                }
+                                            }, 
+                                         start_time='10:00', 
+                                         end_time='16:54'))
         self.domain.set_service('crb', self.crb)
         self.data_service = DataService.create_default_service()
         self.domain.set_service('market_data_service', self.data_service)
