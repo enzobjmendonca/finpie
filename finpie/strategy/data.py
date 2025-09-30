@@ -86,7 +86,6 @@ class Fill:
 class CRBParams:
     magic: int
     symbol_map: Dict[str, Dict[str, str]]
-    multiplier: float
     start_time: str
     end_time: str
 

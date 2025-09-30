@@ -73,13 +73,13 @@ class CRB:
         self.domain.add_fill(fill)
 
     def react(self):
-        multiplier = 1
-        if symbol in self.params.symbol_map:
-            multiplier = self.params.symbol_map[symbol]['multiplier']
-        target_positions = pd.DataFrame(self.domain.strategy_data).groupby('symbol').agg({'position': 'sum'})['position'] * multiplier
+        target_positions = pd.DataFrame(self.domain.strategy_data).groupby('symbol').agg({'position': 'sum'})['position']
         for symbol, target_position in target_positions.items():
+            multiplier = 1
             if symbol in self.params.symbol_map:
+                multiplier = self.params.symbol_map[symbol]['multiplier']
                 symbol = self.params.symbol_map[symbol]['symbol']
+            target_position = target_position * multiplier
             data = self.update_data(symbol, self.params.magic)
             data.update({'target_position': target_position})
             if data.position != data.target_position:
