@@ -18,7 +18,7 @@ class Engine:
                                             'WIN$N': {
                                                 'symbol': 'WINV25', 
                                                 'multiplier': 0.5,
-                                                'contract_size': 0.2,
+                                                'contract_size': 0.2
                                                 }
                                             }, 
                                          start_time='10:00', 

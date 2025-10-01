@@ -29,7 +29,7 @@ class CRB:
         
         return start_time <= current_time <= end_time
 
-    def update_data(self, symbol: str, magic: int):
+    def update_data(self, symbol: str, magic: int, contract_size: float):
         to_date=self.domain.get_market_time()
         from_date= to_date - timedelta(days=1)
         deals=mt5.history_deals_get(from_date, to_date, group=f"*{symbol}*")
@@ -38,26 +38,23 @@ class CRB:
                 continue
             if deal.magic == magic:
                 fill = Fill(str(uuid4()), "CRB", self.domain.get_market_time(), symbol, deal.volume, deal.price, "buy" if deal.type == mt5.DEAL_TYPE_BUY else "sell", "CRB")
-                self.process_fill(fill)
+                self.process_fill(fill, contract_size)
                 self.processed_fills.add(deal.ticket)
         if symbol not in self.crb_data_map:
             self.crb_data_map[symbol] = CRBData(symbol=symbol)
         data = self.crb_data_map[symbol]
-        data.update({'pnl': self.calc_pnl(data), 'time': self.domain.get_market_time()})
+        data.update({'pnl': self.calc_pnl(data, contract_size), 'time': self.domain.get_market_time()})
         return data
     
-    def calc_pnl(self, data: CRBData):
+    def calc_pnl(self, data: CRBData, contract_size: float):
         tick_info = mt5.symbol_info_tick(data.symbol)
         reference_price = (tick_info.ask + tick_info.bid) / 2
-        return (data.sell_notional - data.buy_notional) + (data.position * reference_price)
+        return (data.sell_notional - data.buy_notional) + (data.position * reference_price * contract_size)
 
-    def process_fill(self, fill: Fill):
+    def process_fill(self, fill: Fill, contract_size: float):
         if fill.symbol not in self.crb_data_map:
             self.crb_data_map[fill.symbol] = CRBData(symbol=fill.symbol)
         data = self.crb_data_map[fill.symbol]
-        contract_size = 1
-        if fill.symbol in self.params.symbol_map:
-            contract_size = self.params.symbol_map[fill.symbol]['contract_size']
         data.update(
             {
                 'position': data.position + fill.size * (1 if fill.side == 'buy' else -1),
@@ -76,11 +73,13 @@ class CRB:
         target_positions = pd.DataFrame(self.domain.strategy_data).groupby('symbol').agg({'position': 'sum'})['position']
         for symbol, target_position in target_positions.items():
             multiplier = 1
+            contract_size = 1
             if symbol in self.params.symbol_map:
                 multiplier = self.params.symbol_map[symbol]['multiplier']
+                contract_size = self.params.symbol_map[symbol]['contract_size']
                 symbol = self.params.symbol_map[symbol]['symbol']
             target_position = target_position * multiplier
-            data = self.update_data(symbol, self.params.magic)
+            data = self.update_data(symbol, self.params.magic, contract_size)
             data.update({'target_position': target_position})
             if data.position != data.target_position:
                 delta = data.target_position - data.position
