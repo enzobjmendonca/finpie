@@ -55,10 +55,13 @@ class Domain:
 
     def publish_to_supabase(self):
         if self.get_service('supabase_client'):
-            self.get_service('supabase_client').upsert_fills(self.fills)
-            self.fills = []
-            self.get_service('supabase_client').upsert_data(self.strategy_data, 'strategy_data')
-            self.get_service('supabase_client').upsert_data(self.services['crb'].crb_data_map.values(), 'crb_data')
+            try:
+                self.get_service('supabase_client').upsert_fills(self.fills)
+                self.fills = []
+                self.get_service('supabase_client').upsert_data(self.strategy_data, 'strategy_data')
+                self.get_service('supabase_client').upsert_data(self.services['crb'].crb_data_map.values(), 'crb_data')
+            except Exception as e:
+                print(e)
 
     def get_fills(self) -> list:
         return self.fills
